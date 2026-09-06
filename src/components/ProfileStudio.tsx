@@ -9,17 +9,6 @@ import { uploadLogo } from "@/lib/upload";
 import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
 import type { LaunchInput } from "@/lib/pons";
 
-interface ProfilePackage {
-  name: string;
-  ticker: string;
-  description: string;
-  bio: string;
-  vibes: string[];
-  xThread: string[];
-  avatarPrompts: string[];
-  recommendation: { quoteAsset: string; rationale: string };
-}
-
 interface LaunchOptions {
   launchFee: string;
   canLaunch: boolean | null;
@@ -45,14 +34,7 @@ export function ProfileStudio() {
   const [handle, setHandle] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [vibe, setVibe] = useState("");
-
-  // ── Generated / editable package ──
-  const [pkg, setPkg] = useState<ProfilePackage | null>(null);
   const [avatar, setAvatar] = useState<string>("");
-  const [availability, setAvailability] = useState<{ taken: boolean; note: string } | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [genError, setGenError] = useState<string | null>(null);
 
   // ── Resolved fomo.family profile (real data + creator-fee wallet) ──
   const [fomo, setFomo] = useState<{
@@ -93,36 +75,6 @@ export function ProfileStudio() {
     if (list.length === 0) return [ETH_ASSET];
     return list;
   }, [options]);
-
-  async function generate() {
-    const h = cleanHandle(handle);
-    if (h.length < 2) {
-      setGenError("Enter your fomo.family handle first.");
-      return;
-    }
-    setGenError(null);
-    setGenerating(true);
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ handle: h, displayName, bio, vibe }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Generation failed.");
-      const p = data.package as ProfilePackage;
-      setPkg(p);
-      setName(p.name);
-      setTicker(p.ticker);
-      setDescription(p.description);
-      setAvatar(data.avatar ?? "");
-      setAvailability(data.availability ?? null);
-    } catch (err) {
-      setGenError(err instanceof Error ? err.message : "Generation failed.");
-    } finally {
-      setGenerating(false);
-    }
-  }
 
   /**
    * Detect the real fomo.family profile behind the handle: prefill name, bio
@@ -178,7 +130,7 @@ export function ProfileStudio() {
       const url = await uploadLogo(file);
       setAvatar(url);
     } catch (err) {
-      setGenError(err instanceof Error ? err.message : "Upload failed.");
+      setDetectError(err instanceof Error ? err.message : "Upload failed.");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -209,14 +161,15 @@ export function ProfileStudio() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
-      {/* ── Left: profile seed + generate ── */}
+      {/* ── Left: detect fomo.family profile + editable seed ── */}
       <section className="card p-5 sm:p-6">
         <div className="eyebrow">
           <span className="step-badge">1</span> Your fomo.family profile
         </div>
         <p className="mt-3 text-sm text-zinc-600">
-          Drop your fomo.family handle. We draft a launch-ready profile coin: a name, ticker, bio and
-          avatar. Everything is editable before you launch.
+          Drop your fomo.family handle and detect your profile. We pull your name, avatar and bio
+          straight from fomo.family, and route creator fees to your profile’s wallet. Everything stays
+          editable before you launch.
         </p>
 
         <label className="mt-5 block text-xs font-semibold text-zinc-500">Handle</label>
@@ -230,9 +183,9 @@ export function ProfileStudio() {
           />
         </div>
 
-        <button className="btn-ghost mt-3 w-full" onClick={detectProfile} disabled={detecting}>
-          {detecting && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-pink/40 border-t-pink" />}
-          {detecting ? "Detecting…" : "Detect fomo.family profile"}
+        <button className="btn-brand mt-4 w-full" onClick={detectProfile} disabled={detecting}>
+          {detecting && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+          {detecting ? "Detecting…" : fomo ? "Re-detect profile" : "Detect my fomo.family profile"}
         </button>
         {detectError && <p className="mt-2 text-xs text-red-600">{detectError}</p>}
         {fomo && (
@@ -256,61 +209,23 @@ export function ProfileStudio() {
           </div>
         )}
 
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="block text-xs font-semibold text-zinc-500">Display name (optional)</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className="field mt-1" />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-zinc-500">Vibe (optional)</label>
-            <input value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="builder, degen, artist…" className="field mt-1" />
-          </div>
+        <div className="mt-4">
+          <label className="block text-xs font-semibold text-zinc-500">Display name (optional)</label>
+          <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className="field mt-1" />
         </div>
 
         <label className="mt-3 block text-xs font-semibold text-zinc-500">Bio (optional)</label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          placeholder="A line or two about you — we turn it into your profile lore."
+          placeholder="A line or two about you."
           rows={3}
           className="field mt-1 resize-none"
         />
-
-        <button className="btn-brand mt-4 w-full" onClick={generate} disabled={generating}>
-          {generating && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
-          {generating ? "Drafting your profile coin…" : pkg ? "Regenerate" : "Draft my profile coin"}
-        </button>
-        {genError && <p className="mt-2 whitespace-pre-wrap text-xs text-red-600">{genError}</p>}
         <p className="mt-2 text-[11px] text-zinc-400">
-          Without a drafting key set on the server, drafting is disabled — fill the fields on the right
-          by hand instead and upload an avatar.
+          Detect fills these from fomo.family, or type them in by hand. Set the coin name, ticker and
+          avatar on the right, then launch.
         </p>
-
-        {pkg && (
-          <div className="mt-5 space-y-3 border-t border-ink-line pt-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Profile lore</div>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-600">{pkg.bio}</p>
-            </div>
-            {pkg.vibes?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {pkg.vibes.map((v) => (
-                  <span key={v} className="chip chip-accent">{v}</span>
-                ))}
-              </div>
-            )}
-            {pkg.xThread?.length > 0 && (
-              <details className="rounded-xl border border-ink-line bg-white/50 p-3">
-                <summary className="cursor-pointer text-xs font-semibold text-zinc-600">Launch thread (X)</summary>
-                <ol className="mt-2 space-y-2">
-                  {pkg.xThread.map((t, i) => (
-                    <li key={i} className="rounded-lg bg-black/[0.03] p-2 text-xs text-zinc-600">{t}</li>
-                  ))}
-                </ol>
-              </details>
-            )}
-          </div>
-        )}
       </section>
 
       {/* ── Right: editable package + launch ── */}
@@ -357,10 +272,6 @@ export function ProfileStudio() {
 
         <label className="mt-3 block text-xs font-semibold text-zinc-500">One-line hook</label>
         <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Who is this profile?" className="field mt-1" maxLength={280} />
-
-        {availability?.taken && (
-          <p className="mt-2 text-[11px] text-amber-600">⚠ ${ticker} already exists on-chain — symbols aren’t unique, but you may want a distinct ticker.</p>
-        )}
 
         {/* Paired asset */}
         <label className="mt-4 block text-xs font-semibold text-zinc-500">Paired asset (quote)</label>
