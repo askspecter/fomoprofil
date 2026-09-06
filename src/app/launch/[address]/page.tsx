@@ -72,7 +72,7 @@ export default function ProfileCoinPage() {
       <div className="mx-auto max-w-3xl px-4 pt-16 text-center">
         <div className="card p-10">
           <p className="text-sm text-zinc-600">{error}</p>
-          <Link href="/feed" className="btn-ghost mt-4 inline-flex">← Back to explore</Link>
+          <Link href="/" className="btn-ghost mt-4 inline-flex">← Back to home</Link>
         </div>
       </div>
     );

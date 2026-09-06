@@ -151,7 +151,7 @@ export function DeployButton({
             Open your profile coin →
           </a>
         ) : (
-          <a href="/feed" className="btn-ghost w-full">
+          <a href="/" className="btn-ghost w-full">
             See it in the feed →
           </a>
         )}

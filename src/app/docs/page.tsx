@@ -94,7 +94,7 @@ export default function DocsPage() {
 
       <div className="mt-8 flex gap-3">
         <Link href="/create" className="btn-brand">Launch my profile →</Link>
-        <Link href="/feed" className="btn-ghost">Explore profiles</Link>
+        <Link href="/" className="btn-ghost">Explore profiles</Link>
       </div>
     </div>
   );

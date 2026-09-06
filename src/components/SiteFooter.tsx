@@ -3,7 +3,8 @@ import { Logo } from "./Logo";
 import { SITE } from "@/lib/site";
 
 const PRODUCT = [
-  { href: "/feed", label: "Explore" },
+  { href: "/", label: "Home" },
+  { href: "/explore", label: "Explore" },
   { href: "/create", label: "Launch" },
   { href: "/profile", label: "My Profile" },
   { href: "/docs", label: "Docs" },

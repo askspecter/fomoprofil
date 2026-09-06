@@ -20,7 +20,7 @@ function Icon({ d }: { d: string }) {
 }
 
 const TABS: Tab[] = [
-  { href: "/feed", label: "Home", icon: <Icon d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /> },
+  { href: "/", label: "Home", icon: <Icon d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" /> },
   { href: "/explore", label: "Explore", icon: <Icon d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.3-4.3" /> },
   // center handled specially
   { href: "/leaderboard", label: "Ranks", icon: <Icon d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM22 19v-2a4 4 0 0 0-3-3.87M16 2.13a4 4 0 0 1 0 7.75" /> },
