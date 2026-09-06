@@ -1,12 +1,12 @@
 /**
- * FOMO Profile brand mark — an inline SVG "coin + spark" glyph on the signature
+ * Dime brand mark — an inline SVG "coin + spark" glyph on the signature
  * pink gradient, so the logo ships with the code (no binary asset to host) and
  * reads cleanly at any size.
  */
 export function Logo({ className = "h-8 w-8" }: { className?: string }) {
   return (
     <span className={`inline-flex items-center justify-center overflow-hidden rounded-xl ${className}`}>
-      <svg viewBox="0 0 48 48" className="h-full w-full" role="img" aria-label="FOMO Profile">
+      <svg viewBox="0 0 48 48" className="h-full w-full" role="img" aria-label="Dime">
         <defs>
           <linearGradient id="fomoLogo" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#ff5fa5" />

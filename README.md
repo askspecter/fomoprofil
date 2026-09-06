@@ -1,12 +1,12 @@
-# 🫆 FOMO Profile — tokenize your fomo.family profile
+# 🫆 Dime — tokenize your fomo.family profile
 
-**FOMO Profile** turns a [fomo.family](https://fomo.family) profile into a token and launches it on
+**Dime** turns a [fomo.family](https://fomo.family) profile into a token and launches it on
 **[Pons](https://ponsfamily.com)** — the launchpad on Robinhood Chain — using the **bonding
 curve**. Drop your handle, we draft your profile coin (name, ticker, bio, avatar, launch thread),
 you tune it, and deploy in one signed transaction. Non-custodial: every transaction is signed by
 your own wallet.
 
-> FOMO Profile is a third-party interface to the Pons protocol, not an official Pons or fomo.family
+> Dime is a third-party interface to the Pons protocol, not an official Pons or fomo.family
 > product. Not financial advice.
 
 ## ✨ What it does
@@ -24,7 +24,7 @@ your own wallet.
 ## 🧱 Architecture
 
 ```
-Frontend (Next.js, FOMO Profile UI)
+Frontend (Next.js, Dime UI)
    → ProfileStudio (handle → drafted package → editable launch form)
    → DeployButton → PonsAdapter → launchToken() → bonding curve → graduate to Uniswap V4
    → Wallet (wagmi/viem, Robinhood Chain, non-custodial)

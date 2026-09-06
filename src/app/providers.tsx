@@ -24,7 +24,7 @@ import { robinhoodChain } from "@/lib/chain";
 //      viem. Forcing a single viem broke WalletConnect and crashed the app.
 // And "@rainbow-me/rainbowkit/styles.css" is imported in layout.tsx.
 const wagmiConfig = getDefaultConfig({
-  appName: "FOMO Profile",
+  appName: "Dime",
   projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "fomo_missing_wc_project_id",
   chains: [robinhoodChain],
   transports: { [robinhoodChain.id]: http() },
@@ -37,7 +37,7 @@ const wagmiConfig = getDefaultConfig({
   ],
 });
 
-// Pink accent theme to match FOMO Profile.
+// Pink accent theme to match Dime.
 const fomoTheme = lightTheme({
   accentColor: "#ec0e7b",
   accentColorForeground: "#ffffff",

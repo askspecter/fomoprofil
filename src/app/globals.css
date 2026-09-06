@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   FOMO Profile — light "Prism" theme (bright pink gradient, glass cards)
+   Dime — light "Prism" theme (bright pink gradient, glass cards)
    ───────────────────────────────────────────────────────────── */
 :root {
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, -apple-system, "DejaVu Sans", Arial, sans-serif;
@@ -13,7 +13,7 @@
   color-scheme: light;
 }
 
-/* Techno wordmark for the FOMO PROFILE logotype */
+/* Techno wordmark for the DIME logotype */
 .wordmark {
   font-family: var(--font-logo);
   text-transform: uppercase;
