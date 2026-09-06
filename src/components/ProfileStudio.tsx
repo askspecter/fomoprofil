@@ -27,11 +27,11 @@ function cleanHandle(raw: string): string {
   return raw.trim().replace(/^@+/, "");
 }
 
-export function ProfileStudio() {
+export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }) {
   const { address } = useAccount();
 
   // ── Profile seed inputs ──
-  const [handle, setHandle] = useState("");
+  const [handle, setHandle] = useState(cleanHandle(initialHandle));
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState<string>("");
@@ -69,6 +69,13 @@ export function ProfileStudio() {
       .then((d: LaunchOptions) => setOptions(d))
       .catch(() => setOptions(null));
   }, [address]);
+
+  // Prefilled via /create?handle=… (e.g. the Tokenize button on the leaderboard):
+  // auto-detect the profile on first load.
+  useEffect(() => {
+    if (cleanHandle(initialHandle).length >= 2) detectProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const quoteAssets = useMemo<QuoteAsset[]>(() => {
     const list = options?.quoteAssets ?? [];

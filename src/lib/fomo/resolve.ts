@@ -40,6 +40,19 @@ export interface FomoProfile {
   accountAgeDays: number | null;
 }
 
+/** One ranked trader on the FOMO leaderboard. */
+export interface FomoLeaderRow {
+  rank: number;
+  handle: string;
+  displayName: string;
+  pnlUsd: number | null;
+  volumeUsd: number | null;
+  followers: number | null;
+  holdings: number | null;
+  wallets: { evm: Address | null; solana: string | null };
+  verified: boolean;
+}
+
 /** A resolution error with an HTTP-ish status so the route can map it cleanly. */
 export class FomoResolveError extends Error {
   constructor(
@@ -49,6 +62,81 @@ export class FomoResolveError extends Error {
     super(message);
     this.name = "FomoResolveError";
   }
+}
+
+const LEADERBOARD_WINDOWS = ["24h", "7d", "30d", "all"] as const;
+export type LeaderboardWindow = (typeof LEADERBOARD_WINDOWS)[number];
+
+export function isLeaderboardWindow(v: string): v is LeaderboardWindow {
+  return (LEADERBOARD_WINDOWS as readonly string[]).includes(v);
+}
+
+function num(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/**
+ * Fetch the ranked FOMO leaderboard for a time window. Each row already carries
+ * the trader's real wallets, so a "Tokenize" action can route fees to them.
+ */
+export async function fetchLeaderboard(
+  window: LeaderboardWindow,
+  limit = 50,
+): Promise<{ window: LeaderboardWindow; capturedAt: string | null; traders: FomoLeaderRow[] }> {
+  const key = process.env.FOMO_API_KEY?.trim();
+  if (!key) {
+    throw new FomoResolveError("Leaderboard is not configured on the server (set FOMO_API_KEY).", 503);
+  }
+
+  const url = `${BASE_URL}/v2/leaderboard/${window}?limit=${Math.min(Math.max(limit, 1), 100)}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12_000);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { authorization: `Bearer ${key}`, accept: "application/json" },
+      signal: controller.signal,
+      cache: "no-store",
+    });
+  } catch {
+    throw new FomoResolveError("Couldn't reach the FOMO API. Try again.", 502);
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (res.status === 401) throw new FomoResolveError("The FOMO API key is invalid.", 401);
+  if (res.status === 429) throw new FomoResolveError("FOMO API rate limit reached. Try later.", 429);
+  if (!res.ok) throw new FomoResolveError(`FOMO API error (${res.status}).`, 502);
+
+  const data = (await res.json()) as Record<string, unknown>;
+  const rows = Array.isArray(data.traders) ? (data.traders as Record<string, unknown>[]) : [];
+
+  const traders: FomoLeaderRow[] = rows.map((t, i) => {
+    const w = (t.wallets ?? {}) as Record<string, unknown>;
+    return {
+      rank: typeof t.rank === "number" ? t.rank : i + 1,
+      handle: typeof t.handle === "string" ? t.handle : "",
+      displayName:
+        (typeof t.displayName === "string" && t.displayName.trim()) ||
+        (typeof t.handle === "string" ? t.handle : ""),
+      pnlUsd: num(t.pnlUsd),
+      volumeUsd: num(t.volumeUsd),
+      followers: num(t.followers),
+      holdings: num(t.holdings),
+      wallets: {
+        evm: toAddress(w.evm),
+        solana: typeof w.solana === "string" ? w.solana : null,
+      },
+      verified: t.verified === true,
+    };
+  });
+
+  return {
+    window,
+    capturedAt: typeof data.capturedAt === "string" ? data.capturedAt : null,
+    traders,
+  };
 }
 
 /** Whether resolution is even possible (an API key is configured). */

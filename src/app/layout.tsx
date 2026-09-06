@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BottomNav } from "@/components/BottomNav";
 import { WalletGate } from "@/components/WalletGate";
 import { SITE } from "@/lib/site";
 
@@ -72,9 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <div className="flex min-h-dvh flex-col overflow-x-hidden">
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-24 md:pb-0">{children}</main>
             <SiteFooter />
           </div>
+          <BottomNav />
           <WalletGate />
         </Providers>
       </body>
