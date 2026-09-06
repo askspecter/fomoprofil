@@ -189,7 +189,7 @@ export function DeployButton({
       ? "Reading on-chain…"
       : status === "signing"
         ? "Sign in your wallet…"
-        : "Launch profile · v2";
+        : "Launch profile";
 
   return (
     <div className="space-y-2">

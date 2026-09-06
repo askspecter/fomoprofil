@@ -2,7 +2,7 @@
   "name": "fomo-profile",
   "version": "0.1.0",
   "private": true,
-  "description": "FOMO Profile — tokenize your fomo.family profile and launch it on the Pons v2 bonding curve on Robinhood Chain, non-custodial.",
+  "description": "FOMO Profile — tokenize your fomo.family profile and launch it on the Pons bonding curve on Robinhood Chain, non-custodial.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -187,7 +187,7 @@ export function ProfileStudio() {
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          placeholder="A line or two about you — the AI turns it into your profile lore."
+          placeholder="A line or two about you — we turn it into your profile lore."
           rows={3}
           className="field mt-1 resize-none"
         />
@@ -198,8 +198,8 @@ export function ProfileStudio() {
         </button>
         {genError && <p className="mt-2 whitespace-pre-wrap text-xs text-red-600">{genError}</p>}
         <p className="mt-2 text-[11px] text-zinc-400">
-          Without an AI key set on the server, drafting is disabled — fill the fields on the right by
-          hand instead and upload an avatar.
+          Without a drafting key set on the server, drafting is disabled — fill the fields on the right
+          by hand instead and upload an avatar.
         </p>
 
         {pkg && (
@@ -319,11 +319,11 @@ export function ProfileStudio() {
 
         {/* Launch summary */}
         <div className="mt-4 space-y-1 rounded-xl border border-ink-line bg-white/50 p-3 text-xs text-zinc-500">
-          <div className="flex justify-between"><span>Launch model</span><span className="font-semibold text-zinc-700">Pons v2 · bonding curve</span></div>
+          <div className="flex justify-between"><span>Launch model</span><span className="font-semibold text-zinc-700">Pons · bonding curve</span></div>
           <div className="flex justify-between"><span>Graduates to</span><span className="text-zinc-700">Uniswap V4 (~{V2_GRADUATION_THRESHOLD_ETH} ETH)</span></div>
           {feeEth !== null && <div className="flex justify-between"><span>Launch fee</span><span className="font-mono text-zinc-700">{feeEth} ETH</span></div>}
           {options?.canLaunch === false && (
-            <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for v2 launches yet — the launch would revert.</div>
+            <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for launches yet — the launch would revert.</div>
           )}
         </div>
 

@@ -19,8 +19,8 @@ export default function PrivacyPage() {
             browser to read balances and build transactions. It is not linked to any identity by us.
           </li>
           <li>
-            <strong>Profile inputs:</strong> the handle, name, bio and vibe you enter are sent to the
-            configured AI provider to draft your profile coin. Don’t enter anything you consider
+            <strong>Profile inputs:</strong> the handle, name, bio and vibe you enter are sent to our
+            drafting service to draft your profile coin. Don’t enter anything you consider
             private.
           </li>
           <li>
@@ -42,8 +42,8 @@ export default function PrivacyPage() {
         <h2 className="pt-2 text-base font-bold text-zinc-900">Third parties</h2>
         <p>
           Connecting a wallet, generating copy or images, and reading the chain involve third-party
-          services (your wallet, the AI provider, RPC and explorer endpoints), each governed by its
-          own policies.
+          services (your wallet, the drafting service, RPC and explorer endpoints), each governed by
+          its own policies.
         </p>
       </div>
     </div>
