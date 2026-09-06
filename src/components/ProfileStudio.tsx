@@ -1,0 +1,336 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAccount } from "wagmi";
+import { zeroAddress } from "viem";
+import { QuoteAssetSelect, type QuoteAsset } from "./QuoteAssetSelect";
+import { DeployButton } from "./DeployButton";
+import { uploadLogo } from "@/lib/upload";
+import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
+import type { LaunchInput } from "@/lib/pons";
+
+interface ProfilePackage {
+  name: string;
+  ticker: string;
+  description: string;
+  bio: string;
+  vibes: string[];
+  xThread: string[];
+  avatarPrompts: string[];
+  recommendation: { quoteAsset: string; rationale: string };
+}
+
+interface LaunchOptions {
+  launchFee: string;
+  canLaunch: boolean | null;
+  configs: { id: string }[];
+  quoteAssets: QuoteAsset[];
+}
+
+const ETH_ASSET: QuoteAsset = {
+  asset: zeroAddress,
+  symbol: "ETH",
+  name: "Ether",
+};
+
+/** Normalize a handle for display + ticker seeding. */
+function cleanHandle(raw: string): string {
+  return raw.trim().replace(/^@+/, "");
+}
+
+export function ProfileStudio() {
+  const { address } = useAccount();
+
+  // ── Profile seed inputs ──
+  const [handle, setHandle] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [vibe, setVibe] = useState("");
+
+  // ── Generated / editable package ──
+  const [pkg, setPkg] = useState<ProfilePackage | null>(null);
+  const [avatar, setAvatar] = useState<string>("");
+  const [availability, setAvailability] = useState<{ taken: boolean; note: string } | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+
+  // Editable launch fields
+  const [name, setName] = useState("");
+  const [ticker, setTicker] = useState("");
+  const [description, setDescription] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [website, setWebsite] = useState("");
+  const [initialBuy, setInitialBuy] = useState("");
+  const [buyback, setBuyback] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // ── Launch options (live from the factory) ──
+  const [options, setOptions] = useState<LaunchOptions | null>(null);
+  const [pairToken, setPairToken] = useState<string>(zeroAddress);
+
+  useEffect(() => {
+    const url = address ? `/api/v2/launch-options?address=${address}` : "/api/v2/launch-options";
+    fetch(url, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: LaunchOptions) => setOptions(d))
+      .catch(() => setOptions(null));
+  }, [address]);
+
+  const quoteAssets = useMemo<QuoteAsset[]>(() => {
+    const list = options?.quoteAssets ?? [];
+    if (list.length === 0) return [ETH_ASSET];
+    return list;
+  }, [options]);
+
+  async function generate() {
+    const h = cleanHandle(handle);
+    if (h.length < 2) {
+      setGenError("Enter your fomo.family handle first.");
+      return;
+    }
+    setGenError(null);
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ handle: h, displayName, bio, vibe }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Generation failed.");
+      const p = data.package as ProfilePackage;
+      setPkg(p);
+      setName(p.name);
+      setTicker(p.ticker);
+      setDescription(p.description);
+      setAvatar(data.avatar ?? "");
+      setAvailability(data.availability ?? null);
+    } catch (err) {
+      setGenError(err instanceof Error ? err.message : "Generation failed.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadLogo(file);
+      setAvatar(url);
+    } catch (err) {
+      setGenError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  const launchConfigId = options?.configs?.[0]?.id ? Number(options.configs[0].id) : 0;
+
+  const launchInput: LaunchInput = {
+    version: "v2",
+    name: name.trim() || cleanHandle(handle),
+    ticker: ticker.trim().toUpperCase().replace(/[^A-Z0-9]/g, ""),
+    description: description.trim(),
+    imageUri: avatar,
+    quoteAsset: "ETH",
+    pairToken: pairToken as `0x${string}`,
+    launchConfigId,
+    buybackEnabled: buyback,
+    initialBuyEth: initialBuy && Number(initialBuy) > 0 ? initialBuy : undefined,
+    twitter: twitter.trim() || undefined,
+    website: website.trim() || undefined,
+  };
+
+  const isNativePair = pairToken.toLowerCase() === zeroAddress.toLowerCase();
+  const canDeploy = launchInput.ticker.length >= 2 && launchInput.name.length >= 1;
+  const feeEth = options?.launchFee ? Number(options.launchFee) / 1e18 : null;
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
+      {/* ── Left: profile seed + generate ── */}
+      <section className="card p-5 sm:p-6">
+        <div className="eyebrow">
+          <span className="step-badge">1</span> Your fomo.family profile
+        </div>
+        <p className="mt-3 text-sm text-zinc-600">
+          Drop your fomo.family handle. We draft a launch-ready profile coin: a name, ticker, bio and
+          avatar. Everything is editable before you launch.
+        </p>
+
+        <label className="mt-5 block text-xs font-semibold text-zinc-500">Handle</label>
+        <div className="mt-1 flex items-center gap-2">
+          <span className="text-sm text-zinc-400">@</span>
+          <input
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="yourname"
+            className="field"
+          />
+        </div>
+
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">Display name (optional)</label>
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className="field mt-1" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">Vibe (optional)</label>
+            <input value={vibe} onChange={(e) => setVibe(e.target.value)} placeholder="builder, degen, artist…" className="field mt-1" />
+          </div>
+        </div>
+
+        <label className="mt-3 block text-xs font-semibold text-zinc-500">Bio (optional)</label>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          placeholder="A line or two about you — the AI turns it into your profile lore."
+          rows={3}
+          className="field mt-1 resize-none"
+        />
+
+        <button className="btn-brand mt-4 w-full" onClick={generate} disabled={generating}>
+          {generating && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+          {generating ? "Drafting your profile coin…" : pkg ? "Regenerate" : "Draft my profile coin"}
+        </button>
+        {genError && <p className="mt-2 whitespace-pre-wrap text-xs text-red-600">{genError}</p>}
+        <p className="mt-2 text-[11px] text-zinc-400">
+          Without an AI key set on the server, drafting is disabled — fill the fields on the right by
+          hand instead and upload an avatar.
+        </p>
+
+        {pkg && (
+          <div className="mt-5 space-y-3 border-t border-ink-line pt-4">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Profile lore</div>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-600">{pkg.bio}</p>
+            </div>
+            {pkg.vibes?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {pkg.vibes.map((v) => (
+                  <span key={v} className="chip chip-accent">{v}</span>
+                ))}
+              </div>
+            )}
+            {pkg.xThread?.length > 0 && (
+              <details className="rounded-xl border border-ink-line bg-white/50 p-3">
+                <summary className="cursor-pointer text-xs font-semibold text-zinc-600">Launch thread (X)</summary>
+                <ol className="mt-2 space-y-2">
+                  {pkg.xThread.map((t, i) => (
+                    <li key={i} className="rounded-lg bg-black/[0.03] p-2 text-xs text-zinc-600">{t}</li>
+                  ))}
+                </ol>
+              </details>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ── Right: editable package + launch ── */}
+      <section className="card p-5 sm:p-6">
+        <div className="eyebrow">
+          <span className="step-badge">2</span> Review and launch
+        </div>
+
+        {/* Avatar */}
+        <div className="mt-4 flex items-center gap-4">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-ink-line bg-white">
+            {avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatar} alt="Profile avatar" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-2xl">🫥</span>
+            )}
+          </div>
+          <div className="text-sm">
+            <button className="btn-ghost" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? "Uploading…" : avatar ? "Replace avatar" : "Upload avatar"}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+            <p className="mt-1 text-[11px] text-zinc-400">PNG/JPG. Auto-compressed for on-chain use.</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">Coin name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your profile coin" className="field mt-1" maxLength={40} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">Ticker</label>
+            <input
+              value={ticker}
+              onChange={(e) => setTicker(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10))}
+              placeholder="TICKER"
+              className="field mt-1 font-mono"
+              maxLength={10}
+            />
+          </div>
+        </div>
+
+        <label className="mt-3 block text-xs font-semibold text-zinc-500">One-line hook</label>
+        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Who is this profile?" className="field mt-1" maxLength={280} />
+
+        {availability?.taken && (
+          <p className="mt-2 text-[11px] text-amber-600">⚠ ${ticker} already exists on-chain — symbols aren’t unique, but you may want a distinct ticker.</p>
+        )}
+
+        {/* Paired asset */}
+        <label className="mt-4 block text-xs font-semibold text-zinc-500">Paired asset (quote)</label>
+        <div className="mt-1">
+          <QuoteAssetSelect assets={quoteAssets} value={pairToken} onChange={setPairToken} />
+        </div>
+
+        {/* Socials */}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">X / Twitter (optional)</label>
+            <input value={twitter} onChange={(e) => setTwitter(e.target.value)} placeholder="https://x.com/…" className="field mt-1" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">Website (optional)</label>
+            <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className="field mt-1" />
+          </div>
+        </div>
+
+        {/* Initial buy + buyback */}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-semibold text-zinc-500">
+              Initial buy {isNativePair ? "(ETH, optional)" : "(native only)"}
+            </label>
+            <input
+              value={initialBuy}
+              onChange={(e) => setInitialBuy(e.target.value.replace(/[^0-9.]/g, ""))}
+              placeholder="0.0"
+              inputMode="decimal"
+              className="field mt-1 font-mono disabled:opacity-50"
+              disabled={!isNativePair}
+            />
+          </div>
+          <label className="flex items-end gap-2 pb-2 text-sm text-zinc-600">
+            <input type="checkbox" checked={buyback} onChange={(e) => setBuyback(e.target.checked)} className="h-5 w-5 accent-pink" />
+            Enable protocol buybacks
+          </label>
+        </div>
+
+        {/* Launch summary */}
+        <div className="mt-4 space-y-1 rounded-xl border border-ink-line bg-white/50 p-3 text-xs text-zinc-500">
+          <div className="flex justify-between"><span>Launch model</span><span className="font-semibold text-zinc-700">Pons v2 · bonding curve</span></div>
+          <div className="flex justify-between"><span>Graduates to</span><span className="text-zinc-700">Uniswap V4 (~{V2_GRADUATION_THRESHOLD_ETH} ETH)</span></div>
+          {feeEth !== null && <div className="flex justify-between"><span>Launch fee</span><span className="font-mono text-zinc-700">{feeEth} ETH</span></div>}
+          {options?.canLaunch === false && (
+            <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for v2 launches yet — the launch would revert.</div>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <DeployButton input={launchInput} handle={cleanHandle(handle) || undefined} disabled={!canDeploy} />
+        </div>
+      </section>
+    </div>
+  );
+}
