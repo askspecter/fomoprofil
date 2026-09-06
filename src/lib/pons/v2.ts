@@ -1,4 +1,4 @@
-import { parseEther, toHex, zeroAddress, type Address } from "viem";
+import { getAddress, isAddress, parseEther, toHex, zeroAddress, type Address } from "viem";
 import { v2FactoryAbi, v2LaunchAndBuyAbi } from "./abisV2";
 import { PONS_V2, REGISTRY, V2_GRADUATION_THRESHOLD_ETH } from "./registry";
 import { canLaunch, launchFee, previewLaunchEconomics } from "./readerV2";
@@ -61,6 +61,21 @@ export class PonsV2Adapter implements LaunchStrategy {
     // CREATE2 salt - fresh random is correct for an ordinary launch.
     const salt = toHex(crypto.getRandomValues(new Uint8Array(32)));
 
+    // Creator fees route to the fomo.family profile's resolved wallet when we
+    // have one; otherwise to the connected (deploying) wallet. The zero address
+    // is rejected by the factory, so it is never used.
+    const requested = input.creatorFeeRecipient;
+    const feeRecipient: Address =
+      requested && isAddress(requested) && requested !== zeroAddress
+        ? getAddress(requested)
+        : account;
+    if (feeRecipient !== account) {
+      warnings.push(
+        `Creator fees for this launch will accrue to the fomo.family profile's wallet ` +
+          `(${feeRecipient}), not the wallet that signs the launch.`,
+      );
+    }
+
     const params = {
       name: input.name,
       symbol: input.ticker,
@@ -73,10 +88,10 @@ export class PonsV2Adapter implements LaunchStrategy {
         website: input.website?.trim() ?? "",
         farcaster: "",
       },
-      // A successful on-chain launch (selector 0xa72101af) set this to the
-      // caller's address, not the zero address — some factory paths revert on
-      // zero. Match the proven-working calldata.
-      creatorFeeRecipient: account,
+      // A successful on-chain launch (selector 0xa72101af) set this to a real
+      // address, not the zero address — some factory paths revert on zero. This
+      // is the resolved fomo.family wallet, or the caller when none was resolved.
+      creatorFeeRecipient: feeRecipient,
       creatorTaxBps: 0,
       buybackEnabled: input.buybackEnabled ?? true,
       expectedEconomics,
@@ -98,7 +113,7 @@ export class PonsV2Adapter implements LaunchStrategy {
         );
       }
       // creatorFeeRecipient MUST be explicit for launchAndBuy (zero is rejected).
-      const routerParams = { ...params, creatorFeeRecipient: account };
+      const routerParams = { ...params, creatorFeeRecipient: feeRecipient };
       warnings.push(
         "Atomic create+buy: minTokensOut is 0 (accept-any) since this first buy is front-run-proof by construction."
       );
