@@ -5,7 +5,7 @@ import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
 
 export const metadata: Metadata = {
   title: "Docs",
-  description: "How FOMO Profile tokenizes fomo.family profiles on the Pons v2 bonding curve.",
+  description: "How FOMO Profile tokenizes fomo.family profiles on the Pons bonding curve.",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -22,7 +22,7 @@ export default function DocsPage() {
     <div className="mx-auto max-w-3xl px-4 pt-10 sm:pt-14">
       <h1 className="font-display text-3xl font-black tracking-tight text-zinc-900 sm:text-4xl">Docs</h1>
       <p className="mt-2 text-sm text-zinc-600">
-        {SITE.name} turns a fomo.family profile into a token and launches it on the {SITE.poweredBy} v2
+        {SITE.name} turns a fomo.family profile into a token and launches it on the {SITE.poweredBy}
         bonding curve, on {SITE.chain}. Everything is non-custodial.
       </p>
 
@@ -30,7 +30,7 @@ export default function DocsPage() {
         <Section title="What is a profile coin?">
           <p>
             A profile coin is an ERC-20 that represents a fomo.family profile. It launches on a{" "}
-            {SITE.poweredBy} v2 bonding curve holding the full supply. As people buy in, the curve
+            {SITE.poweredBy} bonding curve holding the full supply. As people buy in, the curve
             fills and the price rises along the curve; once it reaches its graduation threshold
             (~{V2_GRADUATION_THRESHOLD_ETH} ETH by default) it auto-graduates into a permanently-locked
             Uniswap V4 pool.
@@ -40,7 +40,7 @@ export default function DocsPage() {
         <Section title="How launching works">
           <ol className="list-decimal space-y-2 pl-5">
             <li>Enter your fomo.family handle (plus an optional name, bio and vibe).</li>
-            <li>AI drafts a profile coin: name, ticker, one-line hook, lore, an X thread, and an avatar.</li>
+            <li>We draft a profile coin: name, ticker, one-line hook, lore, an X thread, and an avatar.</li>
             <li>Review and edit any field, upload your own avatar, and pick a paired asset.</li>
             <li>Connect your wallet and sign one transaction — the profile launches on the curve.</li>
           </ol>
@@ -52,7 +52,7 @@ export default function DocsPage() {
 
         <Section title="Paired assets">
           <p>
-            Profiles pair against native ETH by default. {SITE.poweredBy} v2 also supports RWA quote
+            Profiles pair against native ETH by default. {SITE.poweredBy} also supports RWA quote
             assets (such as USDG, NVDA, AAPL). Only assets the factory has approved on-chain are
             offered, so a launch can never settle on an unsupported pairing.
           </p>
@@ -77,7 +77,7 @@ export default function DocsPage() {
 
         <Section title="Whitelist note">
           <p>
-            {SITE.poweredBy} v2 is deployed but unaudited, and public launches are whitelist-gated
+            {SITE.poweredBy} is deployed but unaudited, and public launches are whitelist-gated
             on-chain. If your wallet isn’t whitelisted the launch will revert (only gas is spent). The
             studio checks this up front and warns you before you sign.
           </p>

@@ -45,7 +45,7 @@ export default function FeedPage() {
           <h1 className="font-display text-3xl font-black tracking-tight text-zinc-900 sm:text-4xl">
             Explore <span className="grad-text">profiles</span>
           </h1>
-          <p className="mt-2 text-sm text-zinc-600">Recent profile coins launched on the Pons v2 curve.</p>
+          <p className="mt-2 text-sm text-zinc-600">Recent profile coins launched on the Pons curve.</p>
         </div>
         <Link href="/create" className="btn-brand shrink-0">Launch yours →</Link>
       </div>

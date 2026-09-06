@@ -3,7 +3,7 @@ import { ProfileStudio } from "@/components/ProfileStudio";
 
 export const metadata: Metadata = {
   title: "Launch",
-  description: "Tokenize your fomo.family profile and launch it on the Pons v2 bonding curve.",
+  description: "Tokenize your fomo.family profile and launch it on the Pons bonding curve.",
 };
 
 export default function CreatePage() {
@@ -14,7 +14,7 @@ export default function CreatePage() {
           Launch your <span className="grad-text">profile coin</span>
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-          Draft it from your fomo.family handle, tune every field, then launch on the Pons v2 bonding
+          Draft it from your fomo.family handle, tune every field, then launch on the Pons bonding
           curve. Your wallet signs the transaction — nothing is custodied.
         </p>
       </div>

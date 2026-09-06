@@ -15,9 +15,9 @@ export default function HomePage() {
             Tokenize your <span className="grad-text">fomo.family</span> profile.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-zinc-600">
-            Turn your fomo.family profile into a coin and launch it on the {SITE.poweredBy} v2 bonding
-            curve on {SITE.chain}. AI drafts your name, ticker, bio and avatar. You launch in one tap,
-            non-custodial.
+            Turn your fomo.family profile into a coin and launch it on the {SITE.poweredBy} bonding
+            curve on {SITE.chain}. Your name, ticker, bio and avatar are drafted for you. You launch in
+            one tap, non-custodial.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link href="/create" className="btn-brand">Launch my profile →</Link>
@@ -36,7 +36,7 @@ export default function HomePage() {
           {
             n: "1",
             t: "Drop your handle",
-            d: "Paste your fomo.family handle. AI drafts a profile coin — name, ticker, one-line hook, lore and an avatar.",
+            d: "Paste your fomo.family handle. We draft a profile coin — name, ticker, one-line hook, lore and an avatar.",
           },
           {
             n: "2",
@@ -45,7 +45,7 @@ export default function HomePage() {
           },
           {
             n: "3",
-            t: "Launch on Pons v2",
+            t: "Launch on Pons",
             d: "Deploy to the bonding curve in one signed transaction. Trading opens instantly on your curve.",
           },
         ].map((s) => (
@@ -57,14 +57,14 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* ── Why v2 ── */}
+      {/* ── Why the bonding curve ── */}
       <section className="mt-16 card p-6 sm:p-8">
         <div className="grid gap-8 sm:grid-cols-2">
           <div>
-            <div className="eyebrow"><span className="h-1.5 w-1.5 rounded-full bg-pink" /> The v2 bonding curve</div>
+            <div className="eyebrow"><span className="h-1.5 w-1.5 rounded-full bg-pink" /> The bonding curve</div>
             <h2 className="mt-3 text-2xl font-bold text-zinc-900">A fair launch for every profile</h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-              Every profile coin starts on a {SITE.poweredBy} v2 bonding curve that holds the full
+              Every profile coin starts on a {SITE.poweredBy} bonding curve that holds the full
               supply. As people buy in, the curve fills, and once it reaches its threshold it
               auto-graduates into a permanently-locked Uniswap V4 pool. Creators are paid in ETH.
             </p>
@@ -89,7 +89,7 @@ export default function HomePage() {
       <section className="mt-16 mb-4 flex flex-col items-center rounded-3xl border border-ink-line bg-white/50 p-10 text-center backdrop-blur">
         <h2 className="max-w-2xl text-3xl font-black text-zinc-900">Your profile is worth a coin.</h2>
         <p className="mt-3 max-w-lg text-sm text-zinc-600">
-          Launch it in under a minute. AI does the heavy lifting; you keep control of every field and
+          Launch it in under a minute. We do the heavy lifting; you keep control of every field and
           every signature.
         </p>
         <Link href="/create" className="btn-brand mt-6">Launch my profile →</Link>
