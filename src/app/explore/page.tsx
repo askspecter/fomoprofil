@@ -9,7 +9,7 @@ interface FeedItem {
   name: string | null;
   symbol: string | null;
   logo: string;
-  phaseLabel: string;
+  handle?: string;
 }
 
 function isAddress(v: string): v is `0x${string}` {
@@ -25,7 +25,7 @@ export default function ExplorePage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/feed?limit=12", { cache: "no-store" })
+    fetch("/api/launches?limit=12", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => !cancelled && setRecent(d.items ?? []))
       .catch(() => !cancelled && setRecent([]));
@@ -65,7 +65,7 @@ export default function ExplorePage() {
       )}
 
       <div className="mt-10">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-500">Recent launches</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-500">Recent on Dime</h2>
         {recent === null ? (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -73,7 +73,7 @@ export default function ExplorePage() {
             ))}
           </div>
         ) : recent.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No launches yet.</p>
+          <p className="mt-3 text-sm text-zinc-500">No profiles launched on Dime yet.</p>
         ) : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {recent.map((it) => (
@@ -90,7 +90,7 @@ export default function ExplorePage() {
                   <div className="truncate font-bold text-zinc-900">{it.name ?? "Unnamed"}</div>
                   {it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>}
                 </div>
-                <span className="chip ml-auto shrink-0">{it.phaseLabel || "on curve"}</span>
+                {it.handle && <span className="chip ml-auto shrink-0">@{it.handle.replace(/^@+/, "")}</span>}
               </Link>
             ))}
           </div>

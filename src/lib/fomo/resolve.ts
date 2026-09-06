@@ -45,12 +45,22 @@ export interface FomoLeaderRow {
   rank: number;
   handle: string;
   displayName: string;
+  avatar: string | null;
   pnlUsd: number | null;
   volumeUsd: number | null;
   followers: number | null;
   holdings: number | null;
   wallets: { evm: Address | null; solana: string | null };
   verified: boolean;
+}
+
+/** Pull a profile-picture URL from whichever field the API used, if any. */
+function pickAvatar(t: Record<string, unknown>): string | null {
+  for (const k of ["profilePictureLink", "profilePicture", "avatar", "image", "pfp", "profileImage", "imageUrl"]) {
+    const v = t[k];
+    if (typeof v === "string" && /^https?:\/\//.test(v)) return v;
+  }
+  return null;
 }
 
 /** A resolution error with an HTTP-ish status so the route can map it cleanly. */
@@ -120,6 +130,7 @@ export async function fetchLeaderboard(
       displayName:
         (typeof t.displayName === "string" && t.displayName.trim()) ||
         (typeof t.handle === "string" ? t.handle : ""),
+      avatar: pickAvatar(t),
       pnlUsd: num(t.pnlUsd),
       volumeUsd: num(t.volumeUsd),
       followers: num(t.followers),

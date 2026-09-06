@@ -7,6 +7,7 @@ interface Row {
   rank: number;
   handle: string;
   displayName: string;
+  avatar: string | null;
   pnlUsd: number | null;
   followers: number | null;
   holdings: number | null;
@@ -104,12 +105,21 @@ export default function LeaderboardPage() {
             return (
               <div key={r.handle || r.rank} className="card card-hover flex items-center gap-3 p-3">
                 <div className="w-8 shrink-0 text-center text-sm font-bold text-zinc-500">{medal(r.rank)}</div>
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black text-[#0a0b16]"
-                  style={{ background: "linear-gradient(135deg,#8fd0ff,#a9b8ff 55%,#c9a2ff)" }}
-                >
-                  {(r.displayName || r.handle || "?").slice(0, 1).toUpperCase()}
-                </div>
+                {r.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={r.avatar}
+                    alt={r.handle}
+                    className="h-10 w-10 shrink-0 rounded-full border border-ink-line object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black text-[#0a0b16]"
+                    style={{ background: "linear-gradient(135deg,#8fd0ff,#a9b8ff 55%,#c9a2ff)" }}
+                  >
+                    {(r.displayName || r.handle || "?").slice(0, 1).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate font-bold text-zinc-900">{r.displayName || r.handle}</span>
