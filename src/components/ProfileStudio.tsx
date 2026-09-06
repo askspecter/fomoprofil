@@ -54,6 +54,17 @@ export function ProfileStudio() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
+  // ── Resolved fomo.family profile (real data + creator-fee wallet) ──
+  const [fomo, setFomo] = useState<{
+    handle: string;
+    displayName: string;
+    verified: boolean;
+    wallet: string | null;
+  } | null>(null);
+  const [detecting, setDetecting] = useState(false);
+  const [detectError, setDetectError] = useState<string | null>(null);
+  const [feeWallet, setFeeWallet] = useState<`0x${string}` | undefined>(undefined);
+
   // Editable launch fields
   const [name, setName] = useState("");
   const [ticker, setTicker] = useState("");
@@ -113,6 +124,52 @@ export function ProfileStudio() {
     }
   }
 
+  /**
+   * Detect the real fomo.family profile behind the handle: prefill name, bio
+   * and avatar from live data, and capture the profile's EVM wallet so creator
+   * fees route to that person at launch.
+   */
+  async function detectProfile() {
+    const h = cleanHandle(handle);
+    if (h.length < 2) {
+      setDetectError("Enter your fomo.family handle first.");
+      return;
+    }
+    setDetectError(null);
+    setDetecting(true);
+    try {
+      const res = await fetch(`/api/fomo/${encodeURIComponent(h)}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Couldn't detect that profile.");
+      const p = data.profile as {
+        handle: string;
+        displayName: string;
+        bio: string;
+        avatar: string;
+        verified: boolean;
+        wallets: { evm: string | null };
+      };
+      setFomo({ handle: p.handle, displayName: p.displayName, verified: p.verified, wallet: p.wallets.evm });
+      // Prefill real profile data — everything stays editable before launch.
+      if (p.displayName) {
+        setDisplayName(p.displayName);
+        setName((prev) => prev || p.displayName);
+      }
+      if (p.bio) {
+        setBio(p.bio);
+        setDescription((prev) => prev || p.bio.split("\n")[0].slice(0, 280));
+      }
+      if (p.avatar) setAvatar(p.avatar);
+      setFeeWallet((p.wallets.evm as `0x${string}`) ?? undefined);
+    } catch (err) {
+      setFomo(null);
+      setFeeWallet(undefined);
+      setDetectError(err instanceof Error ? err.message : "Couldn't detect that profile.");
+    } finally {
+      setDetecting(false);
+    }
+  }
+
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,6 +193,7 @@ export function ProfileStudio() {
     ticker: ticker.trim().toUpperCase().replace(/[^A-Z0-9]/g, ""),
     description: description.trim(),
     imageUri: avatar,
+    creatorFeeRecipient: feeWallet,
     quoteAsset: "ETH",
     pairToken: pairToken as `0x${string}`,
     launchConfigId,
@@ -171,6 +229,32 @@ export function ProfileStudio() {
             className="field"
           />
         </div>
+
+        <button className="btn-ghost mt-3 w-full" onClick={detectProfile} disabled={detecting}>
+          {detecting && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-pink/40 border-t-pink" />}
+          {detecting ? "Detecting…" : "Detect fomo.family profile"}
+        </button>
+        {detectError && <p className="mt-2 text-xs text-red-600">{detectError}</p>}
+        {fomo && (
+          <div className="mt-3 rounded-xl border border-ink-line bg-white/50 p-3 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold text-zinc-700">
+              @{fomo.handle}
+              {fomo.verified && <span className="text-pink" title="Verified on fomo.family">✓</span>}
+            </div>
+            {fomo.wallet ? (
+              <p className="mt-1 text-zinc-500">
+                Creator fees route to this profile’s wallet:{" "}
+                <span className="font-mono text-zinc-700">
+                  {fomo.wallet.slice(0, 6)}…{fomo.wallet.slice(-4)}
+                </span>
+              </p>
+            ) : (
+              <p className="mt-1 text-amber-600">
+                No EVM wallet on this profile — fees fall back to your connected wallet.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
@@ -321,6 +405,12 @@ export function ProfileStudio() {
         <div className="mt-4 space-y-1 rounded-xl border border-ink-line bg-white/50 p-3 text-xs text-zinc-500">
           <div className="flex justify-between"><span>Launch model</span><span className="font-semibold text-zinc-700">Pons · bonding curve</span></div>
           <div className="flex justify-between"><span>Graduates to</span><span className="text-zinc-700">Uniswap V4 (~{V2_GRADUATION_THRESHOLD_ETH} ETH)</span></div>
+          {feeWallet && (
+            <div className="flex justify-between">
+              <span>Creator fees →</span>
+              <span className="font-mono text-zinc-700">{feeWallet.slice(0, 6)}…{feeWallet.slice(-4)}</span>
+            </div>
+          )}
           {feeEth !== null && <div className="flex justify-between"><span>Launch fee</span><span className="font-mono text-zinc-700">{feeEth} ETH</span></div>}
           {options?.canLaunch === false && (
             <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for launches yet — the launch would revert.</div>

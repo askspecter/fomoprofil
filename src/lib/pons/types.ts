@@ -23,6 +23,12 @@ export interface LaunchInput {
   ticker: string;
   description: string;
   imageUri: string; // data: URI or hosted URL (the profile avatar)
+  /**
+   * On-chain recipient of this profile's creator fees. Set to the fomo.family
+   * profile's resolved EVM wallet so fees route to that person; when unset the
+   * adapter falls back to the connected (deploying) wallet.
+   */
+  creatorFeeRecipient?: `0x${string}`;
   quoteAsset: QuoteAsset;
   /** Optional initial dev buy, in ETH. */
   initialBuyEth?: string;
