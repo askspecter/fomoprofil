@@ -15,8 +15,8 @@ export default function HomePage() {
             Tokenize your <span className="grad-text">fomo.family</span> profile.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-base">
-            Every coin below launched on Dime — its creator fees route to that fomo.family profile’s
-            wallet. Non-custodial on {SITE.chain}.
+            Every coin below launched on Dime, and its creator fees route to that fomo.family
+            profile’s wallet. Non-custodial on {SITE.chain}.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link href="/create" className="btn-brand">Launch my profile →</Link>

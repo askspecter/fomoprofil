@@ -44,7 +44,7 @@ export default function ExplorePage() {
         <span className="grad-text">Explore</span>
       </h1>
       <p className="mt-2 text-sm text-zinc-600">
-        Paste a token contract address to open its page — trade on the curve, see holders, and chat.
+        Paste a token contract address to open its page. Trade on the curve, see holders, and chat.
       </p>
 
       <div className="mt-5 flex gap-2">

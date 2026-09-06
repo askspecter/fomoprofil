@@ -4,7 +4,7 @@ export const SITE = {
   shortName: "Dime",
   tagline: "Tokenize your fomo.family profile.",
   description:
-    "Turn your fomo.family profile into a token. Dime drafts your profile coin and launches it on the Pons bonding curve on Robinhood Chain, non-custodial — your wallet signs every transaction.",
+    "Turn your fomo.family profile into a token. Dime drafts your profile coin and launches it on the Pons bonding curve on Robinhood Chain, non-custodial. Your wallet signs every transaction.",
   x: "https://x.com/dimedotfamily",
   xHandle: "@dimedotfamily",
   company: "Dime",

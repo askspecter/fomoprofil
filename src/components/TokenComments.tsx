@@ -130,7 +130,7 @@ export function TokenComments({ token, symbol }: { token: `0x${string}`; symbol:
             ))}
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-xs text-zinc-500">No comments yet — be the first holder to chat.</p>
+          <p className="text-xs text-zinc-500">No comments yet. Be the first holder to chat.</p>
         ) : (
           comments.map((c, i) => (
             <div key={`${c.author}-${c.ts}-${i}`} className="text-sm">

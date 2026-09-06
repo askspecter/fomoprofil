@@ -23,7 +23,7 @@ const WINDOWS = [
 ] as const;
 
 function usd(n: number | null): string {
-  if (n === null) return "—";
+  if (n === null) return "N/A";
   const sign = n >= 0 ? "+" : "−";
   return `${sign}$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
@@ -62,7 +62,7 @@ export default function LeaderboardPage() {
             <span className="grad-text">Leaderboard</span>
           </h1>
           <p className="mt-2 text-sm text-zinc-600">
-            Top fomo.family traders, live from the FOMO API. Tokenize any profile — fees route to
+            Top fomo.family traders, live from the FOMO API. Tokenize any profile and fees route to
             their wallet.
           </p>
         </div>

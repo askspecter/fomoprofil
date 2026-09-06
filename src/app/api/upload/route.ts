@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   // than the decoded bytes; the client already compresses to fit).
   if (dataUrl.length > 950_000) {
     return NextResponse.json(
-      { error: "Image too large after compression — try a smaller or simpler image." },
+      { error: "Image too large after compression. Try a smaller or simpler image." },
       { status: 413 }
     );
   }

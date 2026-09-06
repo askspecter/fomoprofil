@@ -16,7 +16,7 @@ export default function CreatePage({ searchParams }: { searchParams: { handle?: 
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-600">
           Detect it from your fomo.family handle, tune every field, then launch on the Pons bonding
-          curve. Your wallet signs the transaction — nothing is custodied.
+          curve. Your wallet signs the transaction. Nothing is custodied.
         </p>
       </div>
       <ProfileStudio initialHandle={initialHandle} />

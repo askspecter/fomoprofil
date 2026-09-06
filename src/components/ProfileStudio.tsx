@@ -210,7 +210,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
               </p>
             ) : (
               <p className="mt-1 text-amber-600">
-                No EVM wallet on this profile — fees fall back to your connected wallet.
+                No EVM wallet on this profile, so fees fall back to your connected wallet.
               </p>
             )}
           </div>
@@ -331,7 +331,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
           )}
           {feeEth !== null && <div className="flex justify-between"><span>Launch fee</span><span className="font-mono text-zinc-700">{feeEth} ETH</span></div>}
           {options?.canLaunch === false && (
-            <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for launches yet — the launch would revert.</div>
+            <div className="pt-1 text-amber-600">This wallet isn’t whitelisted for launches yet, so the launch would revert.</div>
           )}
         </div>
 

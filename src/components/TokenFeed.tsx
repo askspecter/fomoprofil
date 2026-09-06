@@ -60,7 +60,7 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
   if (items.length === 0) {
     return (
       <div className="card p-10 text-center">
-        <p className="text-sm text-zinc-600">No profiles launched on Dime yet — be the first.</p>
+        <p className="text-sm text-zinc-600">No profiles launched on Dime yet. Be the first.</p>
         <Link href="/create" className="btn-brand mt-4 inline-flex">Launch my profile →</Link>
       </div>
     );
@@ -92,7 +92,7 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
                 target="_blank"
                 rel="noreferrer"
                 className="truncate font-medium text-pink hover:underline"
-                title="Fee recipient — fomo.family profile"
+                title="Fee recipient · fomo.family profile"
               >
                 @{it.handle.replace(/^@+/, "")}
               </a>

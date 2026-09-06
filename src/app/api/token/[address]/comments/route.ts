@@ -59,7 +59,7 @@ export async function POST(req: Request, { params }: { params: { address: string
   if (text.length === 0) return NextResponse.json({ error: "Comment is empty." }, { status: 400 });
   if (text.length > MAX_COMMENT_LEN) return NextResponse.json({ error: `Max ${MAX_COMMENT_LEN} characters.` }, { status: 400 });
   if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > 10 * 60_000) {
-    return NextResponse.json({ error: "Stale request — try again." }, { status: 400 });
+    return NextResponse.json({ error: "Stale request. Try again." }, { status: 400 });
   }
 
   // 1) Prove wallet ownership: the signature must recover to the author.
@@ -85,7 +85,7 @@ export async function POST(req: Request, { params }: { params: { address: string
       return NextResponse.json({ error: `Only ${"holders"} of this token can comment.` }, { status: 403 });
     }
   } catch {
-    return NextResponse.json({ error: "Couldn’t verify your holdings on-chain — try again." }, { status: 502 });
+    return NextResponse.json({ error: "Couldn’t verify your holdings on-chain. Try again." }, { status: 502 });
   }
 
   const comment: TokenComment = { author: getAddress(author), text, ts: Date.now() };
@@ -94,7 +94,7 @@ export async function POST(req: Request, { params }: { params: { address: string
     const next = [comment, ...existing].slice(0, MAX_STORED);
     await kv.set(key(token), next);
   } catch {
-    return NextResponse.json({ error: "Couldn’t save the comment — try again." }, { status: 500 });
+    return NextResponse.json({ error: "Couldn’t save the comment. Try again." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, comment });

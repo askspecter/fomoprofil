@@ -42,7 +42,7 @@ export default function DocsPage() {
             <li>Enter your fomo.family handle (plus an optional name, bio and vibe).</li>
             <li>We draft a profile coin: name, ticker, one-line hook, lore, an X thread, and an avatar.</li>
             <li>Review and edit any field, upload your own avatar, and pick a paired asset.</li>
-            <li>Connect your wallet and sign one transaction — the profile launches on the curve.</li>
+            <li>Connect your wallet and sign one transaction. The profile launches on the curve.</li>
           </ol>
           <p>
             The launch is simulated on-chain before you sign, so a launch that would revert is caught
