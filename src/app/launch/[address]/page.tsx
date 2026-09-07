@@ -34,6 +34,9 @@ interface TokenData {
   phase: number;
   phaseLabel: string;
   creatorFeeRecipient: string;
+  priceEth: number | null;
+  marketCapEth: number | null;
+  totalSupply: string | null;
   curve: CurveData | null;
   error?: string;
 }
@@ -47,6 +50,17 @@ export default function ProfileCoinPage() {
   const address = params?.address ?? "";
   const [data, setData] = useState<TokenData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyCa(value: string) {
+    navigator.clipboard?.writeText(value).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      },
+      () => {},
+    );
+  }
 
   useEffect(() => {
     if (!address || !isAddress(address)) {
@@ -110,9 +124,17 @@ export default function ProfileCoinPage() {
               {data.curve?.readyToGraduate && <span className="chip chip-accent">ready to graduate</span>}
             </div>
             {data.description && <p className="mt-1 max-w-xl text-sm text-zinc-600">{data.description}</p>}
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-zinc-500">
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-zinc-500">
+              <button
+                onClick={() => copyCa(data.token)}
+                className="inline-flex items-center gap-1 font-mono transition hover:text-pink"
+                title="Copy contract address"
+              >
+                CA {short(data.token)}
+                <span className="not-italic">{copied ? "✓ Copied" : "⧉"}</span>
+              </button>
               <a href={explorerToken(data.token)} target="_blank" rel="noreferrer" className="hover:text-pink">
-                Token {short(data.token)} ↗
+                Explorer ↗
               </a>
               <span>Creator {short(data.deployer)}</span>
               {data.curveAddress && data.curveAddress !== zeroAddress && (
@@ -142,7 +164,12 @@ export default function ProfileCoinPage() {
       {/* Body */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr,0.85fr]">
         <div className="space-y-6">
-          <PriceChartV2 token={data.token} />
+          <PriceChartV2
+            token={data.token}
+            priceEth={data.priceEth}
+            marketCapEth={data.marketCapEth}
+            quoteSymbol={data.pairToken && data.pairToken !== zeroAddress ? "quote" : "ETH"}
+          />
           <ClaimFees pairToken={pairToken} creator={data.creatorFeeRecipient as Address} />
           <TokenComments token={data.token as `0x${string}`} symbol={data.symbol} />
         </div>

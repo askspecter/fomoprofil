@@ -33,8 +33,15 @@ function ago(ts: number): string {
  * Feed of profile coins launched through Dime (not the whole Pons chain).
  * Sourced from Dime's own launch records, so only tokens created here appear.
  */
+function fmtEth(x: number): string {
+  if (x >= 1000) return `${(x / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}K`;
+  if (x >= 1) return x.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return x.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+}
+
 export function TokenFeed({ limit = 48 }: { limit?: number }) {
   const [items, setItems] = useState<LaunchItem[] | null>(null);
+  const [mcaps, setMcaps] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -46,6 +53,27 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
       cancelled = true;
     };
   }, [limit]);
+
+  // Enrich cards with market cap (best-effort, one batched request).
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+    let cancelled = false;
+    const tokens = items.map((i) => i.token).join(",");
+    fetch(`/api/v2/prices?tokens=${tokens}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled || !d.prices) return;
+        const next: Record<string, number> = {};
+        for (const [k, v] of Object.entries(d.prices as Record<string, { marketCapEth: number }>)) {
+          if (v && typeof v.marketCapEth === "number") next[k] = v.marketCapEth;
+        }
+        setMcaps(next);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
 
   if (items === null) {
     return (
@@ -79,10 +107,16 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
                 <span className="text-lg">🫥</span>
               )}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="truncate font-bold text-zinc-900">{it.name || short(it.token)}</div>
               {it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>}
             </div>
+            {mcaps[it.token.toLowerCase()] != null && (
+              <div className="shrink-0 text-right">
+                <div className="text-[10px] uppercase tracking-wider text-zinc-500">MC</div>
+                <div className="text-xs font-bold text-zinc-900">{fmtEth(mcaps[it.token.toLowerCase()])} ETH</div>
+              </div>
+            )}
           </Link>
 
           <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500">

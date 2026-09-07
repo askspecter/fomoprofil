@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { isAddress, zeroAddress, type Address } from "viem";
+import { isAddress, parseAbi, zeroAddress, type Address } from "viem";
 import { getCurveState, getLaunchedTokenV2, phaseLabel, readTokenInfoV2 } from "@/lib/pons/readerV2";
+import { ponsClient } from "@/lib/pons/reader";
 import { getKv } from "@/lib/kv";
+
+const erc20Supply = parseAbi(["function totalSupply() view returns (uint256)"]);
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +43,13 @@ export async function GET(req: Request) {
   }
 
   try {
-    const [record, info] = await Promise.all([getLaunchedTokenV2(token), readTokenInfoV2(token)]);
+    const [record, info, supplyRaw] = await Promise.all([
+      getLaunchedTokenV2(token),
+      readTokenInfoV2(token),
+      ponsClient()
+        .readContract({ address: token, abi: erc20Supply, functionName: "totalSupply" })
+        .catch(() => null),
+    ]);
     if (!record.exists) {
       return NextResponse.json({ error: "No Pons v2 launch found for this token." }, { status: 404 });
     }
@@ -50,6 +59,13 @@ export async function GET(req: Request) {
     if (record.phase === 0 && record.curve && record.curve !== zeroAddress) {
       curve = await getCurveState(record.curve);
     }
+
+    // Price + market cap in the quote asset (ETH for native pairs). spotPrice is
+    // quote-per-token; market cap is that times the human token supply.
+    const priceEth = curve ? curve.spotPrice : null;
+    const humanSupply =
+      supplyRaw != null ? Number(supplyRaw as bigint) / 10 ** info.decimals : null;
+    const marketCapEth = priceEth != null && humanSupply != null ? priceEth * humanSupply : null;
 
     const payload = {
       token,
@@ -65,6 +81,9 @@ export async function GET(req: Request) {
       phaseLabel: phaseLabel(record.phase),
       buybackEnabled: record.buybackEnabled,
       creatorFeeRecipient: record.creatorFeeRecipient,
+      totalSupply: supplyRaw != null ? (supplyRaw as bigint).toString() : null,
+      priceEth,
+      marketCapEth,
       curve: curve
         ? {
             quoteReserve: curve.quoteReserve.toString(),
