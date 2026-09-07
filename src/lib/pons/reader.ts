@@ -10,7 +10,13 @@ let cached: PublicClient | null = null;
 
 export function ponsClient(): PublicClient {
   if (!cached) {
-    cached = createPublicClient({ chain: robinhoodChain, transport: http() });
+    cached = createPublicClient({
+      chain: robinhoodChain,
+      // `batch: true` collapses the many concurrent eth_calls each page makes
+      // into a single JSON-RPC HTTP request, and the retries ride out the public
+      // RPC's short rate-limit windows instead of failing the whole page.
+      transport: http(undefined, { batch: true, retryCount: 6, retryDelay: 600 }),
+    });
   }
   return cached;
 }

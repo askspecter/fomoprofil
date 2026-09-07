@@ -27,7 +27,9 @@ const wagmiConfig = getDefaultConfig({
   appName: "Dime",
   projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "fomo_missing_wc_project_id",
   chains: [robinhoodChain],
-  transports: { [robinhoodChain.id]: http() },
+  transports: {
+    [robinhoodChain.id]: http(undefined, { batch: true, retryCount: 6, retryDelay: 600 }),
+  },
   ssr: true,
   wallets: [
     {
