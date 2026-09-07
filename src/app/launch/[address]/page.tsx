@@ -36,6 +36,8 @@ interface TokenData {
   creatorFeeRecipient: string;
   priceEth: number | null;
   marketCapEth: number | null;
+  priceUsd: number | null;
+  marketCapUsd: number | null;
   totalSupply: string | null;
   curve: CurveData | null;
   error?: string;
@@ -166,7 +168,7 @@ export default function ProfileCoinPage() {
         <div className="space-y-6">
           <PriceChartV2
             token={data.token}
-            priceEth={data.priceEth}
+            marketCapUsd={data.marketCapUsd}
             marketCapEth={data.marketCapEth}
             quoteSymbol={data.pairToken && data.pairToken !== zeroAddress ? "quote" : "ETH"}
           />

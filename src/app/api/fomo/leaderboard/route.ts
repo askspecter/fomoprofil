@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getKv } from "@/lib/kv";
 import {
   fetchLeaderboard,
-  fomoConfigured,
   isLeaderboardWindow,
   FomoResolveError,
   type FomoLeaderRow,
@@ -26,15 +25,9 @@ export async function GET(req: Request) {
   const window = isLeaderboardWindow(windowParam) ? windowParam : "24h";
   const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 50), 1), 100);
 
-  if (!fomoConfigured()) {
-    return NextResponse.json(
-      { error: "Leaderboard is not configured on the server.", traders: [] },
-      { status: 503 },
-    );
-  }
-
   const kv = getKv();
   const key = `fomo:leaderboard:${window}:${limit}`;
+  const lastKey = `fomo:leaderboard:last:${window}`;
 
   if (kv) {
     try {
@@ -50,12 +43,22 @@ export async function GET(req: Request) {
     if (kv) {
       try {
         await kv.set(key, { capturedAt: data.capturedAt, traders: data.traders }, { ex: CACHE_TTL_SECONDS });
+        await kv.set(lastKey, { capturedAt: data.capturedAt, traders: data.traders }); // durable fallback
       } catch {
         // ignore
       }
     }
     return NextResponse.json({ ...data, cached: false });
   } catch (err) {
+    // Serve the last-known leaderboard on a transient FOMO error rather than a blank.
+    if (kv) {
+      try {
+        const last = await kv.get<{ capturedAt: string | null; traders: FomoLeaderRow[] }>(lastKey);
+        if (last && last.traders?.length) return NextResponse.json({ window, ...last, stale: true });
+      } catch {
+        // ignore
+      }
+    }
     if (err instanceof FomoResolveError) {
       return NextResponse.json({ error: err.message, traders: [] }, { status: err.status });
     }

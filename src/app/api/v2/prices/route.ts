@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAddress, parseAbi, zeroAddress, type Address } from "viem";
 import { getCurveState, getLaunchedTokenV2 } from "@/lib/pons/readerV2";
 import { ponsClient } from "@/lib/pons/reader";
+import { ethUsd } from "@/lib/eth-price";
 import { getKv } from "@/lib/kv";
 
 export const runtime = "nodejs";
@@ -22,9 +23,10 @@ const cacheKey = (t: string) => `price:v2:${t.toLowerCase()}`;
 interface Price {
   priceEth: number;
   marketCapEth: number;
+  marketCapUsd: number | null;
 }
 
-async function readPrice(token: Address): Promise<Price | null> {
+async function readPrice(token: Address, usd: number | null): Promise<Price | null> {
   const record = await getLaunchedTokenV2(token).catch(() => null);
   if (!record || !record.exists || record.phase !== 0 || !record.curve || record.curve === zeroAddress) {
     return null;
@@ -38,7 +40,9 @@ async function readPrice(token: Address): Promise<Price | null> {
   if (!curve || supplyRaw == null) return null;
   const supply = Number(supplyRaw as bigint) / 1e18; // factory tokens are 18-decimals
   const priceEth = curve.spotPrice;
-  return { priceEth, marketCapEth: priceEth * supply };
+  const marketCapEth = priceEth * supply;
+  const isNative = !record.pairToken || record.pairToken === zeroAddress;
+  return { priceEth, marketCapEth, marketCapUsd: isNative && usd != null ? marketCapEth * usd : null };
 }
 
 export async function GET(req: Request) {
@@ -72,9 +76,10 @@ export async function GET(req: Request) {
   }
 
   // Read the misses (batched by the RPC client), best-effort.
+  const usd = misses.length > 0 ? await ethUsd() : null;
   await Promise.all(
     misses.map(async (t) => {
-      const p = await readPrice(t).catch(() => null);
+      const p = await readPrice(t, usd).catch(() => null);
       if (!p) return;
       prices[t.toLowerCase()] = p;
       if (kv) {
