@@ -25,11 +25,13 @@ export function PriceChartV2({
   marketCapUsd,
   marketCapEth,
   quoteSymbol = "ETH",
+  graduated = false,
 }: {
   token: string;
   marketCapUsd?: number | null;
   marketCapEth?: number | null;
   quoteSymbol?: string;
+  graduated?: boolean;
 }) {
   const [samples, setSamples] = useState<Sample[] | null>(null);
   const [range, setRange] = useState<(typeof RANGES)[number]["id"]>("1d");
@@ -49,7 +51,13 @@ export function PriceChartV2({
   }, [token]);
 
   const usd = marketCapUsd != null && marketCapUsd > 0;
-  const headline = usd ? fmtUsd(marketCapUsd as number) : marketCapEth != null ? `${fmtNum(marketCapEth)} ${quoteSymbol}` : "—";
+  const headline = usd
+    ? fmtUsd(marketCapUsd as number)
+    : marketCapEth != null && marketCapEth > 0
+      ? `${fmtNum(marketCapEth)} ${quoteSymbol}`
+      : graduated
+        ? "Graduated"
+        : "—";
 
   const windowed = useMemo(() => {
     if (!samples) return [];
@@ -94,6 +102,10 @@ export function PriceChartV2({
 
       {samples === null ? (
         <div className="mt-4 h-44 animate-pulse rounded-xl bg-white/5" />
+      ) : graduated && windowed.length < 2 ? (
+        <div className="mt-4 flex h-44 items-center justify-center rounded-xl bg-white/5 px-6 text-center text-xs text-zinc-500">
+          This coin has graduated and now trades on the Uniswap V4 pool.
+        </div>
       ) : (
         <Chart points={windowed.map((s) => s.mc)} up={up} />
       )}

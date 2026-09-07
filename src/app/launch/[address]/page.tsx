@@ -38,6 +38,7 @@ interface TokenData {
   marketCapEth: number | null;
   priceUsd: number | null;
   marketCapUsd: number | null;
+  graduated?: boolean;
   totalSupply: string | null;
   curve: CurveData | null;
   error?: string;
@@ -171,6 +172,7 @@ export default function ProfileCoinPage() {
             marketCapUsd={data.marketCapUsd}
             marketCapEth={data.marketCapEth}
             quoteSymbol={data.pairToken && data.pairToken !== zeroAddress ? "quote" : "ETH"}
+            graduated={data.graduated}
           />
           <ClaimFees pairToken={pairToken} creator={data.creatorFeeRecipient as Address} />
           <TokenComments token={data.token as `0x${string}`} symbol={data.symbol} />

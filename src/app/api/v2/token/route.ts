@@ -64,16 +64,35 @@ export async function GET(req: Request) {
 
     // Price + market cap in the quote asset (ETH for native pairs). spotPrice is
     // quote-per-token; market cap is that times the human token supply.
-    const priceEth = curve ? curve.spotPrice : null;
+    let priceEth = curve ? curve.spotPrice : null;
     const humanSupply =
       supplyRaw != null ? Number(supplyRaw as bigint) / 10 ** info.decimals : null;
-    const marketCapEth = priceEth != null && humanSupply != null ? priceEth * humanSupply : null;
+    let marketCapEth = priceEth != null && humanSupply != null ? priceEth * humanSupply : null;
 
     // USD figures (native ETH pairs only; RWA pairs keep the quote asset).
     const isNative = !record.pairToken || record.pairToken === zeroAddress;
     const usd = isNative ? await ethUsd() : null;
-    const priceUsd = usd != null && priceEth != null ? priceEth * usd : null;
-    const marketCapUsd = usd != null && marketCapEth != null ? marketCapEth * usd : null;
+    let priceUsd = usd != null && priceEth != null ? priceEth * usd : null;
+    let marketCapUsd = usd != null && marketCapEth != null ? marketCapEth * usd : null;
+    const graduated = record.phase !== 0;
+
+    // Graduated coins trade on the Uniswap V4 pool, not the curve, so there is
+    // no live curve price. Show the last market cap we recorded while it was on
+    // the curve rather than a blank.
+    if (marketCapEth == null && kv) {
+      try {
+        const [rawLast] = (await kv.lrange<string>(chartKey(token), 0, 0)) ?? [];
+        const snap = rawLast ? (JSON.parse(rawLast as string) as { mcUsd?: number; mcEth?: number; p?: number }) : null;
+        if (snap) {
+          marketCapEth = snap.mcEth ?? marketCapEth;
+          marketCapUsd = snap.mcUsd ?? (usd != null && snap.mcEth != null ? snap.mcEth * usd : marketCapUsd);
+          priceEth = snap.p ?? priceEth;
+          priceUsd = usd != null && priceEth != null ? priceEth * usd : priceUsd;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     const payload = {
       token,
@@ -94,6 +113,7 @@ export async function GET(req: Request) {
       marketCapEth,
       priceUsd,
       marketCapUsd,
+      graduated,
       curve: curve
         ? {
             quoteReserve: curve.quoteReserve.toString(),
@@ -116,10 +136,13 @@ export async function GET(req: Request) {
         await kv.set(freshKey(token), payload, { ex: FRESH_TTL });
         await kv.set(lastKey(token), payload); // durable fallback for rate-limit windows
         // Append a price/market-cap sample so the chart builds a real time series
-        // (no heavy event scan). One sample per fresh read (~1 / 20s when viewed).
-        const mc = marketCapUsd ?? marketCapEth;
-        if (mc != null && mc > 0) {
-          await kv.lpush(chartKey(token), JSON.stringify({ t: Date.now(), mc, p: priceUsd ?? priceEth }));
+        // (no heavy event scan). Only while on the curve; store both units so the
+        // chart and any last-known fallback are unit-correct.
+        if (!graduated && marketCapEth != null && marketCapEth > 0) {
+          await kv.lpush(
+            chartKey(token),
+            JSON.stringify({ t: Date.now(), mcUsd: marketCapUsd, mcEth: marketCapEth, p: priceEth }),
+          );
           await kv.ltrim(chartKey(token), 0, 999);
         }
       } catch {
