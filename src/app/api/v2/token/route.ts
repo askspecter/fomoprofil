@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { isAddress, parseAbi, zeroAddress, type Address } from "viem";
 import { getCurveState, getLaunchedTokenV2, phaseLabel, readTokenInfoV2 } from "@/lib/pons/readerV2";
 import { ponsClient } from "@/lib/pons/reader";
+import { ethUsd } from "@/lib/eth-price";
 import { getKv } from "@/lib/kv";
 
 const erc20Supply = parseAbi(["function totalSupply() view returns (uint256)"]);
+const chartKey = (t: string) => `chart:v2:${t.toLowerCase()}`;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,6 +69,12 @@ export async function GET(req: Request) {
       supplyRaw != null ? Number(supplyRaw as bigint) / 10 ** info.decimals : null;
     const marketCapEth = priceEth != null && humanSupply != null ? priceEth * humanSupply : null;
 
+    // USD figures (native ETH pairs only; RWA pairs keep the quote asset).
+    const isNative = !record.pairToken || record.pairToken === zeroAddress;
+    const usd = isNative ? await ethUsd() : null;
+    const priceUsd = usd != null && priceEth != null ? priceEth * usd : null;
+    const marketCapUsd = usd != null && marketCapEth != null ? marketCapEth * usd : null;
+
     const payload = {
       token,
       name: info.name,
@@ -84,6 +92,8 @@ export async function GET(req: Request) {
       totalSupply: supplyRaw != null ? (supplyRaw as bigint).toString() : null,
       priceEth,
       marketCapEth,
+      priceUsd,
+      marketCapUsd,
       curve: curve
         ? {
             quoteReserve: curve.quoteReserve.toString(),
@@ -105,6 +115,13 @@ export async function GET(req: Request) {
       try {
         await kv.set(freshKey(token), payload, { ex: FRESH_TTL });
         await kv.set(lastKey(token), payload); // durable fallback for rate-limit windows
+        // Append a price/market-cap sample so the chart builds a real time series
+        // (no heavy event scan). One sample per fresh read (~1 / 20s when viewed).
+        const mc = marketCapUsd ?? marketCapEth;
+        if (mc != null && mc > 0) {
+          await kv.lpush(chartKey(token), JSON.stringify({ t: Date.now(), mc, p: priceUsd ?? priceEth }));
+          await kv.ltrim(chartKey(token), 0, 999);
+        }
       } catch {
         // ignore cache write errors
       }

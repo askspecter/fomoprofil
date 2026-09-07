@@ -5,6 +5,16 @@ import { canLaunch, launchFee, previewLaunchEconomics } from "./readerV2";
 import type { LaunchStrategy } from "./strategy";
 import { V2_QUOTE_ASSETS, type LaunchInput, type LaunchPlan, type VersionInfo } from "./types";
 
+/** Reject if a promise takes too long, so a saturated RPC can't hang the UI. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Robinhood Chain is busy right now. Try the launch again.")), ms),
+    ),
+  ]);
+}
+
 /**
  * Pons v2 - the token starts on an ETH-denominated bonding curve holding the
  * full supply, then auto-graduates into a permanently-locked Uniswap V4 pool
@@ -38,25 +48,29 @@ export class PonsV2Adapter implements LaunchStrategy {
 
     const warnings: string[] = [];
 
-    // NON-BLOCKING whitelist check. Pons v2 launches are whitelist-gated
-    // ON-CHAIN: if the wallet isn't allowlisted, launchToken() reverts no matter
-    // how correct the calldata is — the frontend cannot bypass that. We never
-    // block here (deploy is always attempted, per request), but we surface a
-    // clear reason up front so a revert isn't a mystery.
-    const allowed = await canLaunch(account).catch(() => null);
+    // Read the whitelist status, launch economics and fee together in one
+    // batched round trip so preparing a launch is fast instead of three
+    // sequential on-chain reads. A generous timeout resets the button with a
+    // clear message rather than spinning forever when the RPC is saturated.
+    //
+    // The whitelist check is NON-BLOCKING: Pons launches are gated on-chain, so
+    // if the wallet isn't allowlisted launchToken() reverts regardless — we
+    // never block here, we just surface the reason so a revert isn't a mystery.
+    const [allowed, expectedEconomics, fee] = await withTimeout(
+      Promise.all([
+        canLaunch(account).catch(() => null),
+        previewLaunchEconomics(launchConfigId, pairToken),
+        launchFee(),
+      ]),
+      25_000,
+    );
     if (allowed === false) {
       warnings.push(
-        "This wallet is not on the Pons v2 whitelist, so the launch will revert on-chain " +
+        "This wallet is not on the Pons whitelist, so the launch will revert on-chain " +
           "(only gas is spent). Ask Pons to whitelist this address, or use a wallet that has " +
-          "launched on Pons v2 before."
+          "launched on Pons before."
       );
     }
-
-    // Pin the economics we were quoted + read the live launch fee.
-    const [expectedEconomics, fee] = await Promise.all([
-      previewLaunchEconomics(launchConfigId, pairToken),
-      launchFee(),
-    ]);
 
     // CREATE2 salt - fresh random is correct for an ordinary launch.
     const salt = toHex(crypto.getRandomValues(new Uint8Array(32)));

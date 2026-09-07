@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 /** A profile coin launched through Dime (from /api/launches). */
@@ -12,6 +12,11 @@ interface LaunchItem {
   handle?: string;
   deployer: string;
   createdAt: number;
+}
+
+interface McInfo {
+  eth: number;
+  usd: number | null;
 }
 
 function short(a: string) {
@@ -29,53 +34,83 @@ function ago(ts: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-/**
- * Feed of profile coins launched through Dime (not the whole Pons chain).
- * Sourced from Dime's own launch records, so only tokens created here appear.
- */
-function fmtEth(x: number): string {
-  if (x >= 1000) return `${(x / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}K`;
-  if (x >= 1) return x.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  return x.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+function fmtMc(m: McInfo): string {
+  if (m.usd != null && m.usd > 0) {
+    const n = m.usd;
+    if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+    if (n >= 1e6) return `$${(n / 1e6).toFixed(2)}M`;
+    if (n >= 1e3) return `$${(n / 1e3).toFixed(1)}K`;
+    return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  }
+  const e = m.eth;
+  if (e >= 1000) return `${(e / 1000).toFixed(1)}K ETH`;
+  if (e >= 1) return `${e.toFixed(2)} ETH`;
+  return `${e.toFixed(4).replace(/0+$/, "").replace(/\.$/, "")} ETH`;
 }
 
+/**
+ * Live feed of profile coins launched through Dime. Refreshes on an interval
+ * and ranks by market cap, so a coin that gets bought rises up the list.
+ */
 export function TokenFeed({ limit = 48 }: { limit?: number }) {
   const [items, setItems] = useState<LaunchItem[] | null>(null);
-  const [mcaps, setMcaps] = useState<Record<string, number>>({});
+  const [mcaps, setMcaps] = useState<Record<string, McInfo>>({});
 
+  // Poll the launch list.
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/launches?limit=${limit}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => !cancelled && setItems(d.items ?? []))
-      .catch(() => !cancelled && setItems([]));
+    const load = () =>
+      fetch(`/api/launches?limit=${limit}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => !cancelled && setItems(d.items ?? []))
+        .catch(() => !cancelled && setItems((prev) => prev ?? []));
+    load();
+    const id = setInterval(load, 20_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
   }, [limit]);
 
-  // Enrich cards with market cap (best-effort, one batched request).
+  // Poll market caps for the listed tokens (best-effort, one batched request).
   useEffect(() => {
     if (!items || items.length === 0) return;
     let cancelled = false;
     const tokens = items.map((i) => i.token).join(",");
-    fetch(`/api/v2/prices?tokens=${tokens}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((d) => {
-        if (cancelled || !d.prices) return;
-        const next: Record<string, number> = {};
-        for (const [k, v] of Object.entries(d.prices as Record<string, { marketCapEth: number }>)) {
-          if (v && typeof v.marketCapEth === "number") next[k] = v.marketCapEth;
-        }
-        setMcaps(next);
-      })
-      .catch(() => {});
+    const load = () =>
+      fetch(`/api/v2/prices?tokens=${tokens}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => {
+          if (cancelled || !d.prices) return;
+          const next: Record<string, McInfo> = {};
+          for (const [k, v] of Object.entries(d.prices as Record<string, { marketCapEth: number; marketCapUsd: number | null }>)) {
+            if (v && typeof v.marketCapEth === "number") next[k] = { eth: v.marketCapEth, usd: v.marketCapUsd ?? null };
+          }
+          setMcaps(next);
+        })
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 15_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
   }, [items]);
 
-  if (items === null) {
+  // Rank by market cap (bought coins rise); unpriced new coins fall in by recency.
+  const ranked = useMemo(() => {
+    if (!items) return null;
+    return [...items].sort((a, b) => {
+      const ma = mcaps[a.token.toLowerCase()]?.eth;
+      const mb = mcaps[b.token.toLowerCase()]?.eth;
+      if (ma != null && mb != null) return mb - ma;
+      if (ma != null) return -1;
+      if (mb != null) return 1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+  }, [items, mcaps]);
+
+  if (ranked === null) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -85,7 +120,7 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
     );
   }
 
-  if (items.length === 0) {
+  if (ranked.length === 0) {
     return (
       <div className="card p-10 text-center">
         <p className="text-sm text-zinc-600">No profiles launched on Dime yet. Be the first.</p>
@@ -96,47 +131,55 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((it) => (
-        <div key={it.token} className="card card-hover flex flex-col p-4">
-          <Link href={`/launch/${it.token}`} className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ink-line bg-white">
-              {it.logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={it.logo} alt={it.symbol ?? "token"} className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-lg">🫥</span>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-bold text-zinc-900">{it.name || short(it.token)}</div>
-              {it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>}
-            </div>
-            {mcaps[it.token.toLowerCase()] != null && (
-              <div className="shrink-0 text-right">
-                <div className="text-[10px] uppercase tracking-wider text-zinc-500">MC</div>
-                <div className="text-xs font-bold text-zinc-900">{fmtEth(mcaps[it.token.toLowerCase()])} ETH</div>
+      {ranked.map((it, rank) => {
+        const mc = mcaps[it.token.toLowerCase()];
+        return (
+          <div key={it.token} className="card card-hover flex flex-col p-4 transition-all duration-500">
+            <Link href={`/launch/${it.token}`} className="flex items-center gap-3">
+              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ink-line bg-white">
+                {it.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={it.logo} alt={it.symbol ?? "token"} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-lg">🫥</span>
+                )}
+                {rank < 3 && (
+                  <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white">
+                    {rank + 1}
+                  </span>
+                )}
               </div>
-            )}
-          </Link>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-bold text-zinc-900">{it.name || short(it.token)}</div>
+                {it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>}
+              </div>
+              {mc && (
+                <div className="shrink-0 text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-zinc-500">MC</div>
+                  <div className="text-sm font-bold text-zinc-900">{fmtMc(mc)}</div>
+                </div>
+              )}
+            </Link>
 
-          <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500">
-            {it.handle ? (
-              <a
-                href={`https://fomo.family/${it.handle.replace(/^@+/, "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate font-medium text-pink hover:underline"
-                title="Fee recipient · fomo.family profile"
-              >
-                @{it.handle.replace(/^@+/, "")}
-              </a>
-            ) : (
-              <span className="font-mono">by {short(it.deployer)}</span>
-            )}
-            <span>{ago(it.createdAt)}</span>
+            <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500">
+              {it.handle ? (
+                <a
+                  href={`https://fomo.family/${it.handle.replace(/^@+/, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="truncate font-medium text-pink hover:underline"
+                  title="Fee recipient · fomo.family profile"
+                >
+                  @{it.handle.replace(/^@+/, "")}
+                </a>
+              ) : (
+                <span className="font-mono">by {short(it.deployer)}</span>
+              )}
+              <span>{ago(it.createdAt)}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

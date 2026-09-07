@@ -94,28 +94,43 @@ export async function fetchLeaderboard(
   limit = 50,
 ): Promise<{ window: LeaderboardWindow; capturedAt: string | null; traders: FomoLeaderRow[] }> {
   const key = process.env.FOMO_API_KEY?.trim();
-  if (!key) {
-    throw new FomoResolveError("Leaderboard is not configured on the server (set FOMO_API_KEY).", 503);
-  }
-
   const url = `${BASE_URL}/v2/leaderboard/${window}?limit=${Math.min(Math.max(limit, 1), 100)}`;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12_000);
+
+  const doFetch = async (useKey: boolean): Promise<Response> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    try {
+      return await fetch(url, {
+        headers:
+          useKey && key
+            ? { authorization: `Bearer ${key}`, accept: "application/json" }
+            : { accept: "application/json" },
+        signal: controller.signal,
+        cache: "no-store",
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
 
   let res: Response;
   try {
-    res = await fetch(url, {
-      headers: { authorization: `Bearer ${key}`, accept: "application/json" },
-      signal: controller.signal,
-      cache: "no-store",
-    });
+    res = await doFetch(Boolean(key));
   } catch {
     throw new FomoResolveError("Couldn't reach the FOMO API. Try again.", 502);
-  } finally {
-    clearTimeout(timeout);
   }
 
-  if (res.status === 401) throw new FomoResolveError("The FOMO API key is invalid.", 401);
+  // The leaderboard is FOMO's public showcase, so it works keyless. If our key
+  // is unpaid or invalid (401 / 402 / 403) fall back to a keyless request
+  // instead of failing the whole page.
+  if (key && [401, 402, 403].includes(res.status)) {
+    try {
+      res = await doFetch(false);
+    } catch {
+      // keep the keyed response's status for the error below
+    }
+  }
+
   if (res.status === 429) throw new FomoResolveError("FOMO API rate limit reached. Try later.", 429);
   if (!res.ok) throw new FomoResolveError(`FOMO API error (${res.status}).`, 502);
 
