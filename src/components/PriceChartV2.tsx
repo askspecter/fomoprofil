@@ -9,50 +9,69 @@ interface Point {
 }
 
 /**
- * v2 price chart, drawn from the bonding curve's trade history (CurveBuy /
- * CurveSell). Mirrors the v1 PriceChart: USD when the quote is native ETH,
- * otherwise price in the quote asset.
+ * Price + market cap for a profile coin, taken from the live curve state (which
+ * always loads), with a trade-history chart layered on when events are indexed.
+ * The price never depends on the slower event scan, so this card is never blank.
  */
-export function PriceChartV2({ token }: { token: string }) {
+export function PriceChartV2({
+  token,
+  priceEth,
+  marketCapEth,
+  quoteSymbol = "ETH",
+}: {
+  token: string;
+  priceEth?: number | null;
+  marketCapEth?: number | null;
+  quoteSymbol?: string;
+}) {
   const [points, setPoints] = useState<Point[] | null>(null);
-  const [quoteSymbol, setQuoteSymbol] = useState("ETH");
 
   useEffect(() => {
     let cancelled = false;
+    const t = setTimeout(() => !cancelled && setPoints((p) => p ?? []), 6000); // never hang on the pulse
     fetch(`/api/v2/token/chart?address=${token}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((d) => {
-        if (cancelled) return;
-        setPoints(d.points ?? []);
-        if (d.quoteSymbol) setQuoteSymbol(d.quoteSymbol);
-      })
-      .catch(() => !cancelled && setPoints([]));
+      .then((d) => !cancelled && setPoints(d.points ?? []))
+      .catch(() => !cancelled && setPoints([]))
+      .finally(() => clearTimeout(t));
     return () => {
       cancelled = true;
+      clearTimeout(t);
     };
   }, [token]);
 
   return (
     <section className="card p-5">
-      <h2 className="text-sm font-medium text-zinc-700">Price</h2>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Price</h2>
+          <div className="mt-1 text-2xl font-black tracking-tight text-zinc-900">
+            {priceEth != null && priceEth > 0 ? `${fmt(priceEth)} ${quoteSymbol}` : `— ${quoteSymbol}`}
+          </div>
+        </div>
+        {marketCapEth != null && marketCapEth > 0 && (
+          <div className="text-right">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Market cap</div>
+            <div className="mt-1 font-bold text-zinc-900">{fmt(marketCapEth)} {quoteSymbol}</div>
+          </div>
+        )}
+      </div>
+
       {points === null ? (
-        <div className="mt-3 h-44 animate-pulse rounded-xl bg-black/[0.04]" />
+        <div className="mt-4 h-40 animate-pulse rounded-xl bg-white/5" />
       ) : (
-        <Chart points={points} quoteSymbol={quoteSymbol} />
+        <Chart points={points} />
       )}
     </section>
   );
 }
 
-function Chart({ points, quoteSymbol }: { points: Point[]; quoteSymbol: string }) {
-  const useUsd = points.length > 0 && points.every((p) => p.priceUsd !== null);
-  const vals = points.map((p) => (useUsd ? (p.priceUsd as number) : p.price));
+function Chart({ points }: { points: Point[] }) {
+  const vals = points.map((p) => p.price);
   const W = 600;
-  const H = 176;
+  const H = 160;
   const pad = 10;
 
-  // Always draw a visible line. With 0–1 trades there's no slope yet, so draw a
-  // flat baseline across the middle (like Pons) instead of hiding the chart.
   const min = vals.length ? Math.min(...vals) : 0;
   const max = vals.length ? Math.max(...vals) : 1;
   const range = max - min || 1;
@@ -65,30 +84,15 @@ function Chart({ points, quoteSymbol }: { points: Point[]; quoteSymbol: string }
   };
 
   const drawn = flat
-    ? [pointFor(0, 0, 2), pointFor(0, 1, 2)] // straight line edge-to-edge
+    ? [pointFor(0, 0, 2), pointFor(0, 1, 2)]
     : vals.map((v, i) => pointFor(v, i, vals.length));
 
   const line = drawn.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
   const area = `${line} L${(W - pad).toFixed(1)},${H} L${pad},${H} Z`;
 
-  const last = vals.length ? vals[vals.length - 1] : 0;
-  const first = vals.length ? vals[0] : 0;
-  const change = first > 0 ? ((last - first) / first) * 100 : 0;
-  const up = change >= 0;
-
   return (
-    <div>
-      <div className="mt-1 flex items-baseline gap-3">
-        <span className="text-2xl font-black tracking-tight text-zinc-900">
-          {useUsd ? `$${fmt(last)}` : `${fmt(last)} ${quoteSymbol}`}
-        </span>
-        {!flat && (
-          <span className={`text-sm font-semibold ${up ? "text-emerald-600" : "text-red-600"}`}>
-            {up ? "▲" : "▼"} {Math.abs(change).toFixed(1)}%
-          </span>
-        )}
-      </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 h-44 w-full" preserveAspectRatio="none">
+    <div className="mt-4">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-40 w-full" preserveAspectRatio="none">
         <defs>
           <linearGradient id="pxfill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#a9b8ff" stopOpacity="0.22" />
@@ -104,13 +108,14 @@ function Chart({ points, quoteSymbol }: { points: Point[]; quoteSymbol: string }
         <path d={line} fill="none" stroke="url(#pxline)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </svg>
       <p className="mt-1 text-[10px] text-zinc-500">
-        {flat ? "Awaiting first trades. The line updates as the curve trades." : `${points.length} curve trades · from on-chain events`}
+        {flat ? "The line fills in as the curve trades." : `${points.length} curve trades · from on-chain events`}
       </p>
     </div>
   );
 }
 
 function fmt(x: number): string {
-  if (x >= 1) return x.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (x >= 1000) return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
+  if (x >= 1) return x.toLocaleString(undefined, { maximumFractionDigits: 4 });
   return x.toFixed(12).replace(/0+$/, "").replace(/\.$/, "");
 }
