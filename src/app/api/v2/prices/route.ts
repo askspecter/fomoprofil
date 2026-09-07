@@ -98,9 +98,12 @@ export async function GET(req: Request) {
   const usd = Object.keys(cached).length > 0 ? await ethUsd() : null;
   const prices: Record<string, { marketCapEth: number; marketCapUsd: number | null }> = {};
   for (const [k, v] of Object.entries(cached)) {
+    // Default to native when unknown (older cache entries, or the overwhelming
+    // majority of ETH-paired coins) so USD is shown consistently, never a mix.
+    const native = v.isNative !== false;
     prices[k] = {
       marketCapEth: v.marketCapEth,
-      marketCapUsd: v.isNative && usd != null ? v.marketCapEth * usd : null,
+      marketCapUsd: native && usd != null ? v.marketCapEth * usd : null,
     };
   }
 
