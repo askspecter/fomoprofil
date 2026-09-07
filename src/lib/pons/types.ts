@@ -1,7 +1,7 @@
 /**
- * FOMO Profile is v2-only: every profile launches on the Pons v2 bonding curve.
- * The version type is kept (as a fixed literal) so records and the engine share
- * one vocabulary with Pons, but there is no v1 path here.
+ * Dime uses a single Pons launch model: every profile launches on the Pons
+ * bonding curve. The version type is kept (as a fixed literal) so records and
+ * the engine share one vocabulary with Pons, but there is no v1 path here.
  */
 export type PonsVersion = "v2";
 

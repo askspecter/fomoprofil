@@ -137,7 +137,7 @@ export function ClaimFees({ pairToken, creator }: { pairToken?: Address; creator
       {!isConnected && <p className="mt-2 text-xs text-zinc-500">Connect your wallet to claim.</p>}
       {txHash && (
         <a className="mt-2 block text-xs text-pink" href={explorerTx(txHash)} target="_blank" rel="noreferrer">
-          ✓ Claim sent - view on explorer
+          ✓ Claim sent. View on explorer
         </a>
       )}
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}

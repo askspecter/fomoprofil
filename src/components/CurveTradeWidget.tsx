@@ -245,12 +245,12 @@ export function CurveTradeWidget({
       {!isConnected && <p className="mt-2 text-xs text-zinc-500">Connect your wallet to trade.</p>}
       {status === "done" && txHash && (
         <a className="mt-2 block text-xs text-pink" href={explorerTx(txHash)} target="_blank" rel="noreferrer">
-          ✓ Trade sent - view on explorer
+          ✓ Trade sent. View on explorer
         </a>
       )}
       {error && <p className="mt-2 whitespace-pre-wrap text-xs text-red-600">{error}</p>}
       <p className="mt-2 text-[10px] text-zinc-500">
-        Estimate assumes 0 snipe tax; a launch&apos;s opening seconds may tax buys more - raise slippage if it reverts.
+        Estimate assumes 0 snipe tax; a launch&apos;s opening seconds may tax buys more, so raise slippage if it reverts.
       </p>
     </div>
   );

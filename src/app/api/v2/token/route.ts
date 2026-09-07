@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAddress, zeroAddress, type Address } from "viem";
 import { getCurveState, getLaunchedTokenV2, phaseLabel, readTokenInfoV2 } from "@/lib/pons/readerV2";
+import { getKv } from "@/lib/kv";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,7 +10,16 @@ export const dynamic = "force-dynamic";
  * GET /api/v2/token?address=0x...
  * Live post-launch state for a Pons v2 token: metadata, phase, and (while on
  * the curve) reserves + progress + fee rates for the trade widget.
+ *
+ * The public Robinhood RPC rate-limits hard, so a popular token viewed by many
+ * people would otherwise fail on every load. We cache the assembled response
+ * briefly, and keep a durable last-known copy to serve when a live read hits a
+ * rate limit — the page shows slightly stale data instead of an error card.
  */
+const FRESH_TTL = 20; // seconds
+const freshKey = (t: string) => `token:v2:fresh:${t.toLowerCase()}`;
+const lastKey = (t: string) => `token:v2:last:${t.toLowerCase()}`;
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const address = searchParams.get("address");
@@ -17,6 +27,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "The `address` param is not a valid address." }, { status: 400 });
   }
   const token = address as Address;
+  const kv = getKv();
+
+  // Fast path: a fresh cached response (shared across all viewers).
+  if (kv) {
+    try {
+      const cached = await kv.get<Record<string, unknown>>(freshKey(token));
+      if (cached) return NextResponse.json({ ...cached, cached: true });
+    } catch {
+      // ignore cache read errors
+    }
+  }
 
   try {
     const [record, info] = await Promise.all([getLaunchedTokenV2(token), readTokenInfoV2(token)]);
@@ -30,7 +51,7 @@ export async function GET(req: Request) {
       curve = await getCurveState(record.curve);
     }
 
-    return NextResponse.json({
+    const payload = {
       token,
       name: info.name,
       symbol: info.symbol,
@@ -59,9 +80,33 @@ export async function GET(req: Request) {
             creatorTaxBps: curve.creatorTaxBps.toString(),
           }
         : null,
-    });
+    };
+
+    if (kv) {
+      try {
+        await kv.set(freshKey(token), payload, { ex: FRESH_TTL });
+        await kv.set(lastKey(token), payload); // durable fallback for rate-limit windows
+      } catch {
+        // ignore cache write errors
+      }
+    }
+
+    return NextResponse.json(payload);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to read the v2 token from chain.";
+    // On a live-read failure (usually an RPC rate limit), serve the last-known
+    // snapshot rather than an error, so the page still renders.
+    if (kv) {
+      try {
+        const last = await kv.get<Record<string, unknown>>(lastKey(token));
+        if (last) return NextResponse.json({ ...last, stale: true });
+      } catch {
+        // ignore
+      }
+    }
+    const raw = err instanceof Error ? err.message : "";
+    const message = /rate limit|429|timeout|fetch failed/i.test(raw)
+      ? "Robinhood Chain is busy right now. Try again in a moment."
+      : raw || "Failed to read the token from chain.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

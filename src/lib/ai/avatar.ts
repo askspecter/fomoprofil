@@ -8,7 +8,7 @@
  * beveled monogram). Same ticker → same logo, every time.
  */
 export function generateFallbackLogo(ticker: string): string {
-  const t = (ticker || "FOMO").toUpperCase();
+  const t = (ticker || "DIME").toUpperCase();
   const seed = hash(t);
   // Two hues pulled from the seed, biased toward vivid, saturated tones. The
   // brand magenta (330°) is blended in as a rim light so marks feel on-brand.

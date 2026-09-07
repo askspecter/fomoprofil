@@ -72,7 +72,7 @@ export function DeployButton({
       const revert = err.walk((e) => e instanceof ContractFunctionRevertedError);
       if (revert instanceof ContractFunctionRevertedError) {
         const name = revert.data?.errorName;
-        if (name) return `${name}${revert.reason ? ` — ${revert.reason}` : ""}`;
+        if (name) return `${name}${revert.reason ? `: ${revert.reason}` : ""}`;
         if (revert.reason) return revert.reason;
       }
       return err.shortMessage || err.message;
@@ -91,7 +91,7 @@ export function DeployButton({
         } catch {
           throw new Error(
             `Your wallet must be on ${robinhoodChain.name} (chain ${robinhoodChain.id}). ` +
-              `Switch networks in your wallet — this is an EVM chain, not Solana — then try again.`
+              `Switch your wallet to this EVM chain (not Solana), then try again.`
           );
         }
       }
@@ -144,14 +144,14 @@ export function DeployButton({
     return (
       <div className="space-y-2">
         <a className="btn-brand w-full" href={explorerTx(txHash)} target="_blank" rel="noreferrer">
-          ✓ Profile launched — view on explorer
+          ✓ Profile launched. View on explorer
         </a>
         {tokenAddress ? (
           <a href={`/launch/${tokenAddress}`} className="btn-ghost w-full">
             Open your profile coin →
           </a>
         ) : (
-          <a href="/feed" className="btn-ghost w-full">
+          <a href="/" className="btn-ghost w-full">
             See it in the feed →
           </a>
         )}

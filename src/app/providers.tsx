@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { WagmiProvider, http, useReconnect } from "wagmi";
-import { RainbowKitProvider, getDefaultConfig, lightTheme } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
 import {
   injectedWallet,
   metaMaskWallet,
@@ -24,10 +24,12 @@ import { robinhoodChain } from "@/lib/chain";
 //      viem. Forcing a single viem broke WalletConnect and crashed the app.
 // And "@rainbow-me/rainbowkit/styles.css" is imported in layout.tsx.
 const wagmiConfig = getDefaultConfig({
-  appName: "FOMO Profile",
+  appName: "Dime",
   projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "fomo_missing_wc_project_id",
   chains: [robinhoodChain],
-  transports: { [robinhoodChain.id]: http() },
+  transports: {
+    [robinhoodChain.id]: http(undefined, { batch: true, retryCount: 6, retryDelay: 600 }),
+  },
   ssr: true,
   wallets: [
     {
@@ -37,10 +39,10 @@ const wagmiConfig = getDefaultConfig({
   ],
 });
 
-// Pink accent theme to match FOMO Profile.
-const fomoTheme = lightTheme({
-  accentColor: "#ec0e7b",
-  accentColorForeground: "#ffffff",
+// Holographic dark theme to match the Dime glass logo.
+const fomoTheme = darkTheme({
+  accentColor: "#a9b8ff",
+  accentColorForeground: "#0a0b16",
   borderRadius: "large",
   overlayBlur: "small",
   fontStack: "system",

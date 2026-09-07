@@ -3,7 +3,8 @@ import { Logo } from "./Logo";
 import { SITE } from "@/lib/site";
 
 const PRODUCT = [
-  { href: "/feed", label: "Explore" },
+  { href: "/", label: "Home" },
+  { href: "/explore", label: "Explore" },
   { href: "/create", label: "Launch" },
   { href: "/profile", label: "My Profile" },
   { href: "/docs", label: "Docs" },
@@ -36,22 +37,6 @@ export function SiteFooter() {
               {l.label}
             </Link>
           ))}
-          <a
-            href={SITE.fomoUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-zinc-600 transition hover:text-zinc-900"
-          >
-            fomo.family ↗
-          </a>
-          <a
-            href={SITE.ponsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-zinc-600 transition hover:text-zinc-900"
-          >
-            ponsfamily.com ↗
-          </a>
         </nav>
 
         <p className="mt-5 max-w-3xl text-xs leading-relaxed text-zinc-400">

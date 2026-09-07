@@ -4,27 +4,40 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BottomNav } from "@/components/BottomNav";
 import { WalletGate } from "@/components/WalletGate";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE.name} — tokenize your fomo.family profile`,
+    default: `${SITE.name} · tokenize your fomo.family profile`,
     template: `%s · ${SITE.name}`,
   },
   description: SITE.description,
   applicationName: SITE.name,
+  icons: {
+    icon: "/dime-logo.png",
+    apple: "/dime-logo.png",
+  },
   openGraph: {
-    title: `${SITE.name} — tokenize your fomo.family profile`,
+    title: `${SITE.name} · tokenize your fomo.family profile`,
     description: SITE.description,
     type: "website",
+    images: ["/dime-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} · tokenize your fomo.family profile`,
+    description: SITE.description,
+    images: ["/dime-logo.png"],
+    site: SITE.xHandle,
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#fff3fa",
+  themeColor: "#05060a",
 };
 
 // Render at request time, not static export. RainbowKit's config throws
@@ -60,9 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <div className="flex min-h-dvh flex-col overflow-x-hidden">
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-24 md:pb-0">{children}</main>
             <SiteFooter />
           </div>
+          <BottomNav />
           <WalletGate />
         </Providers>
       </body>

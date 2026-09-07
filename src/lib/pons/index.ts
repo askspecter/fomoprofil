@@ -3,7 +3,7 @@ import type { LaunchStrategy } from "./strategy";
 import type { PonsVersion, VersionInfo } from "./types";
 
 /**
- * FOMO Profile launches only on Pons v2. The strategy indirection is kept so
+ * Dime launches only on Pons. The strategy indirection is kept so
  * the UI, wallet layer and indexer never hardcode the write path — they ask the
  * active strategy to prepare the launch.
  */

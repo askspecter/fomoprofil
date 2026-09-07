@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { Logo } from "./Logo";
 import { WalletButton } from "./WalletButton";
 import { SITE, NAV } from "@/lib/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
   const isActive = (href: string) => pathname === href;
 
   return (
@@ -41,41 +39,11 @@ export function SiteHeader() {
           <WalletButton variant="inline" />
         </nav>
 
-        {/* Mobile: Connect + hamburger */}
-        <div className="flex shrink-0 items-center gap-2 md:hidden">
+        {/* Mobile: Connect only — navigation lives in the bottom bar. */}
+        <div className="flex shrink-0 items-center md:hidden">
           <WalletButton variant="solid" />
-          <button
-            onClick={() => setOpen((o) => !o)}
-            aria-label="Menu"
-            aria-expanded={open}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-ink-line bg-white/60 text-zinc-800 transition hover:bg-white"
-          >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
-          </button>
         </div>
       </div>
-
-      {/* Mobile dropdown sheet */}
-      {open && (
-        <div className="md:hidden">
-          <nav className="mx-4 mb-3 grid gap-1 rounded-2xl border border-ink-line bg-white/80 p-2 shadow-card backdrop-blur-xl">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                  isActive(item.href) ? "bg-zinc-900 text-white" : "text-zinc-800 hover:bg-black/[0.05]"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
     </header>
   );
 }

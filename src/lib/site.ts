@@ -1,13 +1,13 @@
 /** Shared site constants (links, copy). */
 export const SITE = {
-  name: "FOMO Profile",
-  shortName: "FOMO",
+  name: "Dime",
+  shortName: "Dime",
   tagline: "Tokenize your fomo.family profile.",
   description:
-    "Turn your fomo.family profile into a token. FOMO Profile drafts your profile coin and launches it on the Pons bonding curve on Robinhood Chain, non-custodial — your wallet signs every transaction.",
-  x: "https://x.com/ponsfamily",
-  xHandle: "@ponsfamily",
-  company: "FOMO Profile",
+    "Turn your fomo.family profile into a token. Dime drafts your profile coin and launches it on the Pons bonding curve on Robinhood Chain, non-custodial. Your wallet signs every transaction.",
+  x: "https://x.com/dimedotfamily",
+  xHandle: "@dimedotfamily",
+  company: "Dime",
   chain: "Robinhood Chain",
   poweredBy: "Pons",
   ponsUrl: "https://ponsfamily.com",
@@ -15,8 +15,9 @@ export const SITE = {
 } as const;
 
 export const NAV = [
-  { href: "/feed", label: "Explore" },
+  { href: "/", label: "Home" },
+  { href: "/explore", label: "Explore" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/create", label: "Launch" },
-  { href: "/profile", label: "My Profile" },
-  { href: "/docs", label: "Docs" },
+  { href: "/profile", label: "Profile" },
 ] as const;

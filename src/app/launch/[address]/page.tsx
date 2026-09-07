@@ -7,6 +7,7 @@ import { isAddress, zeroAddress, type Address } from "viem";
 import { CurveTradeWidget } from "@/components/CurveTradeWidget";
 import { PriceChartV2 } from "@/components/PriceChartV2";
 import { ClaimFees } from "@/components/ClaimFees";
+import { TokenComments } from "@/components/TokenComments";
 import { explorerToken, explorerUrl } from "@/lib/chain";
 
 interface CurveData {
@@ -71,7 +72,7 @@ export default function ProfileCoinPage() {
       <div className="mx-auto max-w-3xl px-4 pt-16 text-center">
         <div className="card p-10">
           <p className="text-sm text-zinc-600">{error}</p>
-          <Link href="/feed" className="btn-ghost mt-4 inline-flex">← Back to explore</Link>
+          <Link href="/" className="btn-ghost mt-4 inline-flex">← Back to home</Link>
         </div>
       </div>
     );
@@ -143,6 +144,7 @@ export default function ProfileCoinPage() {
         <div className="space-y-6">
           <PriceChartV2 token={data.token} />
           <ClaimFees pairToken={pairToken} creator={data.creatorFeeRecipient as Address} />
+          <TokenComments token={data.token as `0x${string}`} symbol={data.symbol} />
         </div>
 
         <div className="space-y-6">

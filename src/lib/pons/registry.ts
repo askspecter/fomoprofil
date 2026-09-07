@@ -2,7 +2,7 @@ import type { PonsVersion } from "./types";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
- *  Pons v2 contract registry (FOMO Profile — v2 only)
+ *  Pons contract registry (Dime)
  * ─────────────────────────────────────────────────────────────────────────
  *  Verified v2 deployment on Robinhood Chain (docs.ponsfamily.com/v2). Each
  *  launch's own curve/token is resolved from the factory (created per launch).

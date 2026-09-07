@@ -91,15 +91,20 @@ function Chart({ points, quoteSymbol }: { points: Point[]; quoteSymbol: string }
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 h-44 w-full" preserveAspectRatio="none">
         <defs>
           <linearGradient id="pxfill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#ec0e7b" stopOpacity="0.18" />
-            <stop offset="1" stopColor="#ec0e7b" stopOpacity="0" />
+            <stop offset="0" stopColor="#a9b8ff" stopOpacity="0.22" />
+            <stop offset="1" stopColor="#a9b8ff" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="pxline" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#8fd0ff" />
+            <stop offset="0.6" stopColor="#a9b8ff" />
+            <stop offset="1" stopColor="#c9a2ff" />
           </linearGradient>
         </defs>
         {!flat && <path d={area} fill="url(#pxfill)" stroke="none" />}
-        <path d={line} fill="none" stroke="#ec0e7b" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        <path d={line} fill="none" stroke="url(#pxline)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
       </svg>
       <p className="mt-1 text-[10px] text-zinc-500">
-        {flat ? "Awaiting first trades — line updates as the curve trades." : `${points.length} curve trades · from on-chain events`}
+        {flat ? "Awaiting first trades. The line updates as the curve trades." : `${points.length} curve trades · from on-chain events`}
       </p>
     </div>
   );

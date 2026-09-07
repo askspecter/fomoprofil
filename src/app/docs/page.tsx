@@ -5,7 +5,7 @@ import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
 
 export const metadata: Metadata = {
   title: "Docs",
-  description: "How FOMO Profile tokenizes fomo.family profiles on the Pons bonding curve.",
+  description: "How Dime tokenizes fomo.family profiles on the Pons bonding curve.",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -42,7 +42,7 @@ export default function DocsPage() {
             <li>Enter your fomo.family handle (plus an optional name, bio and vibe).</li>
             <li>We draft a profile coin: name, ticker, one-line hook, lore, an X thread, and an avatar.</li>
             <li>Review and edit any field, upload your own avatar, and pick a paired asset.</li>
-            <li>Connect your wallet and sign one transaction — the profile launches on the curve.</li>
+            <li>Connect your wallet and sign one transaction. The profile launches on the curve.</li>
           </ol>
           <p>
             The launch is simulated on-chain before you sign, so a launch that would revert is caught
@@ -94,7 +94,7 @@ export default function DocsPage() {
 
       <div className="mt-8 flex gap-3">
         <Link href="/create" className="btn-brand">Launch my profile →</Link>
-        <Link href="/feed" className="btn-ghost">Explore profiles</Link>
+        <Link href="/" className="btn-ghost">Explore profiles</Link>
       </div>
     </div>
   );
