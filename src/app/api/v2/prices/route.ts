@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { isAddress, parseAbi, zeroAddress, type Address } from "viem";
-import { getCurveState, getLaunchedTokenV2 } from "@/lib/pons/readerV2";
-import { ponsClient } from "@/lib/pons/reader";
+import { isAddress, type Address } from "viem";
 import { ethUsd } from "@/lib/eth-price";
 import { getKv } from "@/lib/kv";
+import { readPrice, priceCacheKey, PRICE_TTL, type Cached } from "@/lib/pons/price";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,37 +17,6 @@ export const revalidate = 0;
  * consistently in USD (never a mix of ETH and USD). Best-effort: a token that
  * can't be read is simply omitted.
  */
-const erc20Supply = parseAbi(["function totalSupply() view returns (uint256)"]);
-const PRICE_TTL = 60; // seconds
-const cacheKey = (t: string) => `price:v2:${t.toLowerCase()}`;
-
-interface Cached {
-  priceEth: number;
-  marketCapEth: number;
-  isNative: boolean;
-}
-
-async function readPrice(token: Address): Promise<Cached | null> {
-  const record = await getLaunchedTokenV2(token).catch(() => null);
-  if (!record || !record.exists || record.phase !== 0 || !record.curve || record.curve === zeroAddress) {
-    return null;
-  }
-  const [curve, supplyRaw] = await Promise.all([
-    getCurveState(record.curve).catch(() => null),
-    ponsClient()
-      .readContract({ address: token, abi: erc20Supply, functionName: "totalSupply" })
-      .catch(() => null),
-  ]);
-  if (!curve || supplyRaw == null) return null;
-  const supply = Number(supplyRaw as bigint) / 1e18; // factory tokens are 18-decimals
-  const priceEth = curve.spotPrice;
-  return {
-    priceEth,
-    marketCapEth: priceEth * supply,
-    isNative: !record.pairToken || record.pairToken === zeroAddress,
-  };
-}
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const tokens = (searchParams.get("tokens") ?? "")
@@ -67,7 +35,7 @@ export async function GET(req: Request) {
     await Promise.all(
       tokens.map(async (t) => {
         try {
-          const hit = await kv.get<Cached>(cacheKey(t));
+          const hit = await kv.get<Cached>(priceCacheKey(t));
           if (hit && typeof hit.marketCapEth === "number") cached[t.toLowerCase()] = hit;
           else misses.push(t);
         } catch {
@@ -86,7 +54,7 @@ export async function GET(req: Request) {
       cached[t.toLowerCase()] = p;
       if (kv) {
         try {
-          await kv.set(cacheKey(t), p, { ex: PRICE_TTL });
+          await kv.set(priceCacheKey(t), p, { ex: PRICE_TTL });
         } catch {
           // ignore
         }

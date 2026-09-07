@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { getAddress, isAddress, parseAbi, zeroAddress, type Address } from "viem";
+import { getAddress, isAddress, parseAbi, type Address } from "viem";
 import { getKv } from "@/lib/kv";
-import { getCurveState, getLaunchedTokenV2 } from "@/lib/pons/readerV2";
 import { ponsClient } from "@/lib/pons/reader";
 import { ethUsd } from "@/lib/eth-price";
+import { readPrice, priceCacheKey, type Cached } from "@/lib/pons/price";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,8 +17,9 @@ export const revalidate = 0;
  *  - total raised into the curves (a proxy for cumulative buy volume)
  *  - $DIME bought back and burned, when the token + burn address are configured
  *
- * The whole summary is cached in KV for a minute, so viewing the page never
- * hammers the RPC.
+ * Per-token figures come from the same price cache the feed warms; misses are
+ * read one at a time (not in a burst) so the RPC is never overwhelmed. The
+ * summary is cached in KV for a minute.
  */
 const LAUNCH_KEY = "fomo:launches";
 const STATS_KEY = "stats:summary";
@@ -63,25 +64,35 @@ export async function GET() {
 
   const usd = await ethUsd();
 
-  // Aggregate market cap + total raised across coins still on the curve.
+  // Aggregate market cap + total raised, one token at a time (cache first).
   let mcEth = 0;
   let raisedEth = 0;
-  await Promise.all(
-    tokens.map(async (t) => {
+  let priced = 0;
+  for (const t of tokens) {
+    let p: Cached | null = null;
+    if (kv) {
       try {
-        const rec = await getLaunchedTokenV2(t);
-        if (!rec.exists || rec.phase !== 0 || !rec.curve || rec.curve === zeroAddress) return;
-        const [curve, supplyRaw] = await Promise.all([
-          getCurveState(rec.curve),
-          ponsClient().readContract({ address: t, abi: erc20, functionName: "totalSupply" }).catch(() => null),
-        ]);
-        if (supplyRaw != null) mcEth += curve.spotPrice * (Number(supplyRaw as bigint) / 1e18);
-        raisedEth += Number(curve.realQuoteReserve) / 1e18;
+        p = await kv.get<Cached>(priceCacheKey(t));
       } catch {
-        // best-effort per token
+        // ignore
       }
-    }),
-  );
+    }
+    if (!p) {
+      p = await readPrice(t).catch(() => null);
+      if (p && kv) {
+        try {
+          await kv.set(priceCacheKey(t), p, { ex: 300 });
+        } catch {
+          // ignore
+        }
+      }
+    }
+    if (p) {
+      mcEth += p.marketCapEth;
+      raisedEth += typeof p.raisedEth === "number" ? p.raisedEth : 0;
+      priced++;
+    }
+  }
 
   // $DIME buyback + burn: balance held at the burn address.
   let burn: { amount: number; pct: number | null } | null = null;
@@ -114,7 +125,9 @@ export async function GET() {
 
   if (kv) {
     try {
-      await kv.set(STATS_KEY, summary, { ex: 60 });
+      // Cache the good summary for a minute; if nothing priced (transient RPC
+      // failure) cache only briefly so it recomputes soon instead of showing 0.
+      await kv.set(STATS_KEY, summary, { ex: priced > 0 ? 60 : 10 });
     } catch {
       // ignore
     }
