@@ -9,7 +9,6 @@ interface Stats {
   marketCapEth: number;
   raisedUsd: number | null;
   raisedEth: number;
-  burn: { amount: number; pct: number | null } | null;
   updatedAt: number;
 }
 
@@ -85,15 +84,6 @@ export default function StatsPage() {
               value={usd(s.raisedUsd)}
               sub={eth(s.raisedEth)}
             />
-            {s.burn ? (
-              <Tile
-                label="$DIME burned"
-                value={num(s.burn.amount)}
-                sub={s.burn.pct != null ? `${s.burn.pct.toFixed(2)}% of supply · buyback & burn` : "buyback & burn"}
-              />
-            ) : (
-              <Tile label="$DIME burned" value="—" sub="Set the $DIME token to track burns" />
-            )}
           </div>
           <p className="mt-4 text-[11px] text-zinc-500">
             Market cap and total raised cover coins currently on the curve. Updates every 30 seconds.

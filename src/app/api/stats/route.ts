@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getAddress, isAddress, parseAbi, type Address } from "viem";
+import { getAddress, isAddress, type Address } from "viem";
 import { getKv } from "@/lib/kv";
-import { ponsClient } from "@/lib/pons/reader";
 import { ethUsd } from "@/lib/eth-price";
 import { readPrice, priceCacheKey, type Cached } from "@/lib/pons/price";
 
@@ -15,7 +14,6 @@ export const revalidate = 0;
  *  - profiles tokenized (count of Dime launches)
  *  - aggregate market cap of coins still on the curve
  *  - total raised into the curves (a proxy for cumulative buy volume)
- *  - $DIME bought back and burned, when the token + burn address are configured
  *
  * Per-token figures come from the same price cache the feed warms; misses are
  * read one at a time (not in a burst) so the RPC is never overwhelmed. The
@@ -23,11 +21,6 @@ export const revalidate = 0;
  */
 const LAUNCH_KEY = "fomo:launches";
 const STATS_KEY = "stats:summary";
-const DEAD = "0x000000000000000000000000000000000000dEaD";
-const erc20 = parseAbi([
-  "function balanceOf(address account) view returns (uint256)",
-  "function totalSupply() view returns (uint256)",
-]);
 
 export async function GET() {
   const kv = getKv();
@@ -94,31 +87,12 @@ export async function GET() {
     }
   }
 
-  // $DIME buyback + burn: balance held at the burn address.
-  let burn: { amount: number; pct: number | null } | null = null;
-  const dime = process.env.NEXT_PUBLIC_DIME_TOKEN?.trim();
-  const burnAddr = process.env.NEXT_PUBLIC_BURN_ADDRESS?.trim() || DEAD;
-  if (dime && isAddress(dime) && isAddress(burnAddr)) {
-    try {
-      const [burned, supply] = await Promise.all([
-        ponsClient().readContract({ address: getAddress(dime), abi: erc20, functionName: "balanceOf", args: [getAddress(burnAddr)] }),
-        ponsClient().readContract({ address: getAddress(dime), abi: erc20, functionName: "totalSupply" }),
-      ]);
-      const b = Number(burned as bigint) / 1e18;
-      const s = Number(supply as bigint) / 1e18;
-      burn = { amount: b, pct: s > 0 ? (b / s) * 100 : null };
-    } catch {
-      // ignore
-    }
-  }
-
   const summary = {
     launches,
     marketCapEth: mcEth,
     marketCapUsd: usd != null ? mcEth * usd : null,
     raisedEth,
     raisedUsd: usd != null ? raisedEth * usd : null,
-    burn,
     ethUsd: usd,
     updatedAt: Date.now(),
   };
