@@ -12,7 +12,8 @@ export default function CreatePage({
   searchParams: { handle?: string; type?: string };
 }) {
   const initialHandle = typeof searchParams?.handle === "string" ? searchParams.handle : "";
-  const initialKind: LaunchKind = searchParams?.type === "feed" ? "feed" : "profile";
+  const initialKind: LaunchKind =
+    searchParams?.type === "feed" ? "feed" : searchParams?.type === "nft" ? "nft" : "profile";
   return (
     <div className="mx-auto max-w-6xl px-4 pt-10 sm:pt-14">
       <div className="mb-6">

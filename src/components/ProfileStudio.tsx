@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { zeroAddress } from "viem";
 import { QuoteAssetSelect, type QuoteAsset } from "./QuoteAssetSelect";
 import { DeployButton } from "./DeployButton";
+import { MintNftButton } from "./MintNftButton";
 import { uploadLogo } from "@/lib/upload";
 import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
 import type { LaunchInput } from "@/lib/pons";
@@ -51,9 +52,9 @@ const FALLBACK_QUOTE_ASSETS: QuoteAsset[] = [
 ];
 
 /** What the user is tokenizing: their fomo.family profile, or their feed. */
-export type LaunchKind = "profile" | "feed";
+export type LaunchKind = "profile" | "feed" | "nft";
 
-/** Kind-specific copy so one studio serves both launch types. */
+/** Kind-specific copy so one studio serves every launch type. */
 const KIND_COPY: Record<LaunchKind, { noun: string; Noun: string; hook: string; seedSuffix: string }> = {
   profile: {
     noun: "profile",
@@ -66,6 +67,12 @@ const KIND_COPY: Record<LaunchKind, { noun: string; Noun: string; hook: string; 
     Noun: "Feed",
     hook: "What's this feed about?",
     seedSuffix: " Feed",
+  },
+  nft: {
+    noun: "profile",
+    Noun: "NFT",
+    hook: "Who is this profile?",
+    seedSuffix: "",
   },
 };
 
@@ -231,7 +238,7 @@ export function ProfileStudio({
       <div className="card p-4 sm:p-5">
         <div className="eyebrow mb-3">What do you want to tokenize?</div>
         <div className="segbar" role="tablist" aria-label="Launch type">
-          {(["profile", "feed"] as LaunchKind[]).map((k) => (
+          {(["profile", "feed", "nft"] as LaunchKind[]).map((k) => (
             <button
               key={k}
               type="button"
@@ -241,14 +248,16 @@ export function ProfileStudio({
               className="segbtn"
               onClick={() => setKind(k)}
             >
-              {k === "profile" ? "Fomo Profile" : "Fomo Feed"}
+              {k === "profile" ? "Fomo Profile" : k === "feed" ? "Fomo Feed" : "Fomo NFT"}
             </button>
           ))}
         </div>
         <p className="mt-3 text-xs text-zinc-500">
           {kind === "profile"
             ? "Launch a coin for your fomo.family profile: your identity, avatar and bio."
-            : "Launch a coin for your fomo.family feed: the stream you post and curate."}
+            : kind === "feed"
+              ? "Launch a coin for your fomo.family feed: the stream you post and curate."
+              : "Mint your fomo.family profile as an NFT. Your profile. Your NFT. Your on-chain identity."}
         </p>
       </div>
 
@@ -345,6 +354,8 @@ export function ProfileStudio({
           </div>
         </div>
 
+        {kind !== "nft" ? (
+        <>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-semibold text-zinc-500">Coin name</label>
@@ -424,6 +435,34 @@ export function ProfileStudio({
         <div className="mt-4">
           <DeployButton input={launchInput} handle={cleanHandle(handle) || undefined} kind={kind} disabled={!canDeploy} />
         </div>
+        </>
+        ) : (
+        <>
+          {/* NFT identity preview */}
+          <div className="mt-4">
+            <label className="block text-xs font-semibold text-zinc-500">NFT name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your profile NFT" className="field mt-1" maxLength={60} />
+          </div>
+          <label className="mt-3 block text-xs font-semibold text-zinc-500">Description (optional)</label>
+          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={copy.hook} className="field mt-1" maxLength={280} />
+
+          <div className="mt-4 space-y-1 rounded-xl border border-ink-line bg-white/50 p-3 text-xs text-zinc-500">
+            <div className="flex justify-between"><span>Type</span><span className="font-semibold text-zinc-700">Fomo NFT · on-chain identity</span></div>
+            <div className="flex justify-between"><span>Standard</span><span className="text-zinc-700">ERC-721</span></div>
+            <div className="flex justify-between"><span>Chain</span><span className="text-zinc-700">{`Robinhood Chain`}</span></div>
+            {feeWallet && (
+              <div className="flex justify-between">
+                <span>Identity wallet</span>
+                <span className="font-mono text-zinc-700">{feeWallet.slice(0, 6)}…{feeWallet.slice(-4)}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <MintNftButton ready={!!fomo} />
+          </div>
+        </>
+        )}
       </section>
       </div>
     </div>

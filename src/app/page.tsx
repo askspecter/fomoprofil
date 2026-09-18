@@ -16,12 +16,13 @@ export default function HomePage() {
             Tokenize your <span className="grad-text">fomo.family</span> profile &amp; feed.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-base">
-            Every coin below launched on Vibz, and its creator fees route to that fomo.family
-            wallet. Pick what you launch: your profile or your feed. Non-custodial on {SITE.chain}.
+            Coin your fomo.family profile or feed, or mint it as an NFT. Your profile. Your NFT.
+            Your on-chain identity. Non-custodial on {SITE.chain}.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link href="/create?type=profile" className="btn-brand">Launch a profile →</Link>
             <Link href="/create?type=feed" className="btn-dark">Launch a feed →</Link>
+            <Link href="/create?type=nft" className="btn-dark">Mint as NFT →</Link>
             <Link href="/explore" className="btn-ghost">Search by contract</Link>
           </div>
         </div>

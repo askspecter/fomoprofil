@@ -13,6 +13,8 @@ export const SITE = {
   /** The official $VIBZ token contract on Robinhood Chain (set via env). */
   tokenAddress: (process.env.NEXT_PUBLIC_VIBZ_TOKEN ?? "").trim(),
   tokenSymbol: "VIBZ",
+  /** The profile-NFT (ERC-721) contract. Blank until NFT minting launches. */
+  nftAddress: (process.env.NEXT_PUBLIC_VIBZ_NFT ?? "").trim(),
 } as const;
 
 export const NAV = [
