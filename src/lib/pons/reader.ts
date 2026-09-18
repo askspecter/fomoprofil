@@ -3,7 +3,7 @@ import { robinhoodChain } from "../chain";
 
 /**
  * Shared read-only client for Robinhood Chain. Vibz uses a single Pons launch
- * model, so the wider v1 indexer is intentionally absent — every on-chain
+ * model, so the wider v1 indexer is intentionally absent - every on-chain
  * read goes through the Pons reader (readerV2.ts), which uses this client.
  */
 let cached: PublicClient | null = null;

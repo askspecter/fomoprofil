@@ -22,6 +22,34 @@ const ETH_ASSET: QuoteAsset = {
   name: "Ether",
 };
 
+/**
+ * Full paired-asset list (ETH + Pons RWA / stock quote tokens), used as the
+ * client fallback so the picker always shows the same set Pons offers, even if
+ * the live launch-options read is slow or returns only ETH. The deploy path
+ * still validates the chosen asset on-chain, so an un-approved pick just fails
+ * the simulation rather than launching wrongly.
+ */
+const FALLBACK_QUOTE_ASSETS: QuoteAsset[] = [
+  ETH_ASSET,
+  { asset: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", symbol: "USDG", name: "Global Dollar" },
+  { asset: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC", symbol: "NVDA", name: "NVIDIA" },
+  { asset: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa", symbol: "SPCX", name: "SpaceX Class A" },
+  { asset: "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3", symbol: "GOOGL", name: "Alphabet Class A" },
+  { asset: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d", symbol: "TSLA", name: "Tesla" },
+  { asset: "0x1b0E319c6A659F002271B69dB8A7df2F911c153E", symbol: "GME", name: "GameStop" },
+  { asset: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9", symbol: "AAPL", name: "Apple" },
+  { asset: "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C", symbol: "SPY", name: "S&P 500 ETF" },
+  { asset: "0xB90A19fF0Af67f7779afF50A882A9CfF42446400", symbol: "SNDK", name: "SanDisk" },
+  { asset: "0x86923f96303D656E4aa86D9d42D1e57ad2023fdC", symbol: "AMD", name: "Advanced Micro Devices" },
+  { asset: "0x12f190a9F9d7D37a250758b26824B97CE941bF54", symbol: "AMZN", name: "Amazon" },
+  { asset: "0xe93237C50D904957Cf27E7B1133b510C669c2e74", symbol: "MSFT", name: "Microsoft" },
+  { asset: "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35", symbol: "META", name: "Meta Platforms" },
+  { asset: "0xdF0992E440dD0be65BD8439b609d6D4366bf1CB5", symbol: "CRCL", name: "Circle" },
+  { asset: "0x6330D8C3178a418788dF01a47479c0ce7CCF450b", symbol: "COIN", name: "Coinbase" },
+  { asset: "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD", symbol: "MU", name: "Micron" },
+  { asset: "0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a", symbol: "PLTR", name: "Palantir" },
+];
+
 /** What the user is tokenizing: their fomo.family profile, or their feed. */
 export type LaunchKind = "profile" | "feed";
 
@@ -108,8 +136,10 @@ export function ProfileStudio({
 
   const quoteAssets = useMemo<QuoteAsset[]>(() => {
     const list = options?.quoteAssets ?? [];
-    if (list.length === 0) return [ETH_ASSET];
-    return list;
+    // Use the live list only when it actually carries the paired-asset set.
+    // Otherwise fall back to the full Pons RWA / stock list so the picker is
+    // never just ETH.
+    return list.length > 1 ? list : FALLBACK_QUOTE_ASSETS;
   }, [options]);
 
   /**
@@ -138,7 +168,7 @@ export function ProfileStudio({
         wallets: { evm: string | null };
       };
       setFomo({ handle: p.handle, displayName: p.displayName, verified: p.verified, wallet: p.wallets.evm });
-      // Prefill real profile data — everything stays editable before launch.
+      // Prefill real profile data - everything stays editable before launch.
       if (p.displayName) {
         setDisplayName(p.displayName);
         setName((prev) => prev || `${p.displayName}${copy.seedSuffix}`);
@@ -217,8 +247,8 @@ export function ProfileStudio({
         </div>
         <p className="mt-3 text-xs text-zinc-500">
           {kind === "profile"
-            ? "Launch a coin for your fomo.family profile — your identity, avatar and bio."
-            : "Launch a coin for your fomo.family feed — the stream you post and curate."}
+            ? "Launch a coin for your fomo.family profile: your identity, avatar and bio."
+            : "Launch a coin for your fomo.family feed: the stream you post and curate."}
         </p>
       </div>
 

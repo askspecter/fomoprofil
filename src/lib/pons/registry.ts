@@ -8,7 +8,7 @@ import type { PonsVersion } from "./types";
  *  launch's own curve/token is resolved from the factory (created per launch).
  *
  *  NOTE: v2 is deployed but UNAUDITED, and public launches are whitelist-only.
- *  Always check canLaunch(address) before offering deploy — the adapter does.
+ *  Always check canLaunch(address) before offering deploy - the adapter does.
  * ─────────────────────────────────────────────────────────────────────────
  */
 export const PONS_V2 = {
@@ -48,7 +48,7 @@ export const REGISTRY: Record<PonsVersion, PonsVersionConfig> = {
 /**
  * ERC-20 quote-token addresses on Robinhood Chain. These are offered as v2
  * quote assets ONLY after being validated live against the factory
- * (approvedPairTokens + pairTokenEconomics) — an asset the factory hasn't
+ * (approvedPairTokens + pairTokenEconomics) - an asset the factory hasn't
  * approved is never shown, so a launch can't settle on it. Extra addresses can
  * be appended via NEXT_PUBLIC_V2_PAIR_TOKENS.
  */

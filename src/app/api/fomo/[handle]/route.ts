@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  * resolved EVM wallet becomes the creator-fee recipient at launch.
  *
  * Results are cached in KV (when configured) because the FOMO free tier meters
- * handle→wallet resolution separately (25/month) — one cache hit costs nothing.
+ * handle→wallet resolution separately (25/month) - one cache hit costs nothing.
  */
 const CACHE_TTL_SECONDS = 60 * 60 * 12; // 12h
 const cacheKey = (h: string) => `fomo:profile:${h.toLowerCase()}`;

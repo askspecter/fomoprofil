@@ -1,5 +1,5 @@
 /**
- * Vibz brand mark — the sculpted white infinity monogram. Shipped as a static
+ * Vibz brand mark - the sculpted white infinity monogram. Shipped as a static
  * asset (public/vibz-logo.jpg) and rendered as an image so the exact artwork is
  * used. The warm near-black plate matches the app canvas so it sits seamlessly.
  */

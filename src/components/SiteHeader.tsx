@@ -39,7 +39,7 @@ export function SiteHeader() {
           <WalletButton variant="inline" />
         </nav>
 
-        {/* Mobile: Connect only — navigation lives in the bottom bar. */}
+        {/* Mobile: Connect only - navigation lives in the bottom bar. */}
         <div className="flex shrink-0 items-center md:hidden">
           <WalletButton variant="solid" />
         </div>

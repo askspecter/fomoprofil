@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "@rainbow-me/rainbowkit/styles.css"; // REQUIRED, before globals — styles the connect modal
+import "@rainbow-me/rainbowkit/styles.css"; // REQUIRED, before globals - styles the connect modal
 import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/SiteHeader";

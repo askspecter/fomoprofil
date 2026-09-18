@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/upload — storage diagnostic (safe: reports env var NAMES only, never
+ * GET /api/upload - storage diagnostic (safe: reports env var NAMES only, never
  * values). Use this to see why image storage isn't detected: it lists which
  * KV/Redis/Upstash env vars the deployment can actually see and whether the
  * client initialises.

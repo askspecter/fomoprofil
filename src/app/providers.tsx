@@ -12,7 +12,7 @@ import {
 } from "@rainbow-me/rainbowkit/wallets";
 import { robinhoodChain } from "@/lib/chain";
 
-// Wallet connect — the exact working RainbowKit + wagmi v2 setup carried over
+// Wallet connect - the exact working RainbowKit + wagmi v2 setup carried over
 // from the proven Pons v2 launch app. RainbowKit's modal gives MetaMask /
 // Browser Wallet / Rainbow / WalletConnect. WalletConnect negotiates an
 // EVM-only (eip155) session, so multi-chain wallets connect on Robinhood.
@@ -20,7 +20,7 @@ import { robinhoodChain } from "@/lib/chain";
 // Stability depends on TWO things, both in place:
 //   1. next.config.js webpack aliases stub the Coinbase/Base account SDKs that
 //      wagmi's connector barrel eagerly imports.
-//   2. NO viem `overrides` in package.json — WalletConnect keeps its own nested
+//   2. NO viem `overrides` in package.json - WalletConnect keeps its own nested
 //      viem. Forcing a single viem broke WalletConnect and crashed the app.
 // And "@rainbow-me/rainbowkit/styles.css" is imported in layout.tsx.
 const wagmiConfig = getDefaultConfig({

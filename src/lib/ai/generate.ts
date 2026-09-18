@@ -23,7 +23,7 @@ export interface ProfileSeed {
 const CREATIVE_RULES = `You are the creative engine of Vibz, an app that tokenizes a person's fomo.family profile and launches it on the Pons bonding curve (Robinhood Chain).
 Given a fomo.family profile, design a COMPLETE, launch-ready PROFILE COIN package for that person.
 
-- name: the profile coin name — usually the person's display name or handle, catchy and human. Max 40 chars.
+- name: the profile coin name - usually the person's display name or handle, catchy and human. Max 40 chars.
 - ticker: 2-10 UPPERCASE chars derived from the handle (e.g. handle "brian.fomo" -> "BRIAN"). No spaces.
 - description: one punchy one-line hook that captures who this profile is.
 - bio: a short, fun profile bio/backstory (2-4 short paragraphs) that gives the profile identity. Write in third or first person, keep it flattering but grounded.

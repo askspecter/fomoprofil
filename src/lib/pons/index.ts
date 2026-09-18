@@ -4,7 +4,7 @@ import type { PonsVersion, VersionInfo } from "./types";
 
 /**
  * Vibz launches only on Pons. The strategy indirection is kept so
- * the UI, wallet layer and indexer never hardcode the write path — they ask the
+ * the UI, wallet layer and indexer never hardcode the write path - they ask the
  * active strategy to prepare the launch.
  */
 const strategies: Record<PonsVersion, LaunchStrategy> = {

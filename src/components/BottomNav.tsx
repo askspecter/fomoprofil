@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 
 /**
- * Mobile bottom tab bar — the app-style navigation matching fomo.family's
+ * Mobile bottom tab bar - the app-style navigation matching fomo.family's
  * layout: Home, Explore, Vibz (center), Leaderboard, Create.
  * Desktop keeps the top SiteHeader, so this is hidden from md up.
  */

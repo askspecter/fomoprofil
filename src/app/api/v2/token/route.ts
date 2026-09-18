@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
  * The public Robinhood RPC rate-limits hard, so a popular token viewed by many
  * people would otherwise fail on every load. We cache the assembled response
  * briefly, and keep a durable last-known copy to serve when a live read hits a
- * rate limit — the page shows slightly stale data instead of an error card.
+ * rate limit - the page shows slightly stale data instead of an error card.
  */
 const FRESH_TTL = 20; // seconds
 const freshKey = (t: string) => `token:v2:fresh:${t.toLowerCase()}`;

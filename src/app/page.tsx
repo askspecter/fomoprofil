@@ -16,7 +16,7 @@ export default function HomePage() {
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-base">
             Every coin below launched on Vibz, and its creator fees route to that fomo.family
-            wallet. Pick what you launch — your profile or your feed. Non-custodial on {SITE.chain}.
+            wallet. Pick what you launch: your profile or your feed. Non-custodial on {SITE.chain}.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link href="/create?type=profile" className="btn-brand">Launch a profile →</Link>

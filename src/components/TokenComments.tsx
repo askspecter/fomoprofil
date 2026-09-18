@@ -23,7 +23,7 @@ function ago(ts: number): string {
 
 /**
  * Holders-only chat on a profile coin. Anyone can read; only wallets that hold
- * the token can post — enforced by a wallet signature + an on-chain balance
+ * the token can post - enforced by a wallet signature + an on-chain balance
  * check on the server.
  */
 export function TokenComments({ token, symbol }: { token: `0x${string}`; symbol: string }) {

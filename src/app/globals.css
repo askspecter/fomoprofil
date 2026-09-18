@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   Vibz — cinematic monochrome theme.
+   Vibz - cinematic monochrome theme.
    Warm near-black canvas, sculpted white / warm-silver signature,
-   frosted glass surfaces — matched to the white infinity monogram.
+   frosted glass surfaces - matched to the white infinity monogram.
    ───────────────────────────────────────────────────────────── */
 :root {
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, -apple-system, "DejaVu Sans", Arial, sans-serif;
@@ -20,7 +20,7 @@
   --holo-4: #a8a297; /* deep silver */
   --holo: linear-gradient(100deg, var(--holo-1) 0%, var(--holo-2) 42%, var(--holo-3) 74%, var(--holo-4) 100%);
 
-  /* Text — warm neutral greys on espresso black. */
+  /* Text - warm neutral greys on espresso black. */
   --ink-1: #f6f4ef;
   --ink-2: #d9d6cf;
   --ink-3: #b0aca2;
@@ -297,6 +297,6 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
   html { scroll-behavior: auto; }
-  /* The ticker marquee is core to the page's feel — keep it running. */
+  /* The ticker marquee is core to the page's feel - keep it running. */
   .marquee-track { animation: marquee 32s linear infinite !important; }
 }

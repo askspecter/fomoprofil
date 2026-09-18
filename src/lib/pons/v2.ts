@@ -54,7 +54,7 @@ export class PonsV2Adapter implements LaunchStrategy {
     // clear message rather than spinning forever when the RPC is saturated.
     //
     // The whitelist check is NON-BLOCKING: Pons launches are gated on-chain, so
-    // if the wallet isn't allowlisted launchToken() reverts regardless — we
+    // if the wallet isn't allowlisted launchToken() reverts regardless - we
     // never block here, we just surface the reason so a revert isn't a mystery.
     const [allowed, expectedEconomics, fee] = await withTimeout(
       Promise.all([
@@ -103,7 +103,7 @@ export class PonsV2Adapter implements LaunchStrategy {
         farcaster: "",
       },
       // A successful on-chain launch (selector 0xa72101af) set this to a real
-      // address, not the zero address — some factory paths revert on zero. This
+      // address, not the zero address - some factory paths revert on zero. This
       // is the resolved fomo.family wallet, or the caller when none was resolved.
       creatorFeeRecipient: feeRecipient,
       creatorTaxBps: 0,

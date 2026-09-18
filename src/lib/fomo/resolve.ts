@@ -11,7 +11,7 @@ import { getAddress, isAddress, type Address } from "viem";
  *  fomo.family wallet.
  *
  *  Requires a server-side FOMO_API_KEY (Bearer). The key never reaches the
- *  browser — only this module and the /api/fomo route read it.
+ *  browser - only this module and the /api/fomo route read it.
  *
  *  NOTE ON QUOTA: the FOMO free tier meters handle→wallet resolution separately
  *  (25 resolutions / month). Callers should cache results (see the /api/fomo

@@ -6,7 +6,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const KEY = "fomo:launches";
+// Feed storage namespace. Bumping this version starts the launched-token feed
+// from an empty list (previous records are left in place but no longer read).
+const KEY = "vibz:launches:v2";
 
 /** A profile coin launched through Vibz (always Pons). */
 export interface LaunchRecord {

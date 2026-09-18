@@ -57,7 +57,7 @@ export function PriceChartV2({
       ? `${fmtNum(marketCapEth)} ${quoteSymbol}`
       : graduated
         ? "Graduated"
-        : "—";
+        : "N/A";
 
   const windowed = useMemo(() => {
     if (!samples) return [];

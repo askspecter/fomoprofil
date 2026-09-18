@@ -8,7 +8,7 @@ import { ponsClient } from "./reader";
  */
 const erc20Supply = parseAbi(["function totalSupply() view returns (uint256)"]);
 
-export const PRICE_TTL = 300; // seconds — kept warm by feed views, read by /api/stats
+export const PRICE_TTL = 300; // seconds - kept warm by feed views, read by /api/stats
 export const priceCacheKey = (t: string) => `price:v2:${t.toLowerCase()}`;
 
 export interface Cached {

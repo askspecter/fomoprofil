@@ -99,7 +99,7 @@ export function DeployButton({
         }
       }
       setStatus("preparing");
-      // On-chain metadata must be short — a data-URI avatar makes the factory
+      // On-chain metadata must be short - a data-URI avatar makes the factory
       // revert with MetadataTooLong(). Replace it with a short stored URL.
       const onchainLogo = await toOnchainLogo(input.imageUri);
       const safeInput: LaunchInput = {
