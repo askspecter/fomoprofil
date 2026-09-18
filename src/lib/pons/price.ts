@@ -3,12 +3,12 @@ import { getCurveState, getLaunchedTokenV2 } from "./readerV2";
 import { ponsClient } from "./reader";
 
 /**
- * Per-token price/market-cap read, shared by the feed prices endpoint and the
- * stats endpoint. Kept in one place so both cache the same shape.
+ * Per-token price/market-cap read, used by the feed prices endpoint.
+ * Kept in one place so callers cache the same shape.
  */
 const erc20Supply = parseAbi(["function totalSupply() view returns (uint256)"]);
 
-export const PRICE_TTL = 300; // seconds - kept warm by feed views, read by /api/stats
+export const PRICE_TTL = 300; // seconds - kept warm by feed views
 export const priceCacheKey = (t: string) => `price:v2:${t.toLowerCase()}`;
 
 export interface Cached {

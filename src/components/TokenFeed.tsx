@@ -133,48 +133,66 @@ export function TokenFeed({ limit = 48 }: { limit?: number }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {ranked.map((it, rank) => {
         const mc = mcaps[it.token.toLowerCase()];
+        const cleanHandle = it.handle ? it.handle.replace(/^@+/, "") : "";
+        // The feed points at the tokenized person: the card header opens their
+        // fomo.family profile automatically. Without a handle it falls back to
+        // the coin page. The coin itself stays reachable via "Open coin ->".
+        const profileUrl = cleanHandle ? `https://fomo.family/${cleanHandle}` : null;
+
+        const header = (
+          <>
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ink-line bg-white">
+              {it.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={it.logo} alt={it.symbol ?? "token"} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-lg">🫥</span>
+              )}
+              {rank < 3 && (
+                <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white">
+                  {rank + 1}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-bold text-zinc-900">{it.name || short(it.token)}</div>
+              {cleanHandle ? (
+                <div className="truncate text-xs text-pink">@{cleanHandle}</div>
+              ) : (
+                it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>
+              )}
+            </div>
+            {mc && (
+              <div className="shrink-0 text-right">
+                <div className="text-[10px] uppercase tracking-wider text-zinc-500">MC</div>
+                <div className="text-sm font-bold text-zinc-900">{fmtMc(mc)}</div>
+              </div>
+            )}
+          </>
+        );
+
         return (
           <div key={it.token} className="card card-hover flex flex-col p-4 transition-all duration-500">
-            <Link href={`/launch/${it.token}`} className="flex items-center gap-3">
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ink-line bg-white">
-                {it.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={it.logo} alt={it.symbol ?? "token"} className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-lg">🫥</span>
-                )}
-                {rank < 3 && (
-                  <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white">
-                    {rank + 1}
-                  </span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-bold text-zinc-900">{it.name || short(it.token)}</div>
-                {it.symbol && <div className="font-mono text-xs text-pink">${it.symbol}</div>}
-              </div>
-              {mc && (
-                <div className="shrink-0 text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-zinc-500">MC</div>
-                  <div className="text-sm font-bold text-zinc-900">{fmtMc(mc)}</div>
-                </div>
-              )}
-            </Link>
+            {profileUrl ? (
+              <a
+                href={profileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-3"
+                title={`Open @${cleanHandle} on fomo.family`}
+              >
+                {header}
+              </a>
+            ) : (
+              <Link href={`/launch/${it.token}`} className="flex items-center gap-3">
+                {header}
+              </Link>
+            )}
 
             <div className="mt-3 flex items-center justify-between text-[11px] text-zinc-500">
-              {it.handle ? (
-                <a
-                  href={`https://fomo.family/${it.handle.replace(/^@+/, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="truncate font-medium text-pink hover:underline"
-                  title="Fee recipient · fomo.family profile"
-                >
-                  @{it.handle.replace(/^@+/, "")}
-                </a>
-              ) : (
-                <span className="font-mono">by {short(it.deployer)}</span>
-              )}
+              <Link href={`/launch/${it.token}`} className="font-medium text-pink hover:underline">
+                Open coin{it.symbol ? ` $${it.symbol}` : ""} →
+              </Link>
               <span>{ago(it.createdAt)}</span>
             </div>
           </div>
