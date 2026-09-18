@@ -15,6 +15,13 @@ export const revalidate = 0;
  */
 const chartKey = (t: string) => `chart:v2:${t.toLowerCase()}`;
 
+interface RawSample {
+  t: number;
+  mc?: number; // legacy single-unit samples
+  mcUsd?: number | null;
+  mcEth?: number | null;
+  p?: number | null;
+}
 interface Sample {
   t: number;
   mc: number;
@@ -32,10 +39,16 @@ export async function GET(req: Request) {
   if (!kv) return NextResponse.json({ points: [] });
 
   try {
-    const raw = (await kv.lrange<Sample | string>(chartKey(address), 0, 999)) ?? [];
+    const raw = (await kv.lrange<RawSample | string>(chartKey(address), 0, 999)) ?? [];
     const points = raw
       .map((r) => (typeof r === "string" ? safeParse(r) : r))
-      .filter((p): p is Sample => !!p && typeof p.t === "number" && typeof p.mc === "number")
+      .map((r): Sample | null => {
+        if (!r || typeof r.t !== "number") return null;
+        const mc = r.mcUsd ?? r.mcEth ?? r.mc; // prefer USD, else ETH, else legacy
+        if (typeof mc !== "number") return null;
+        return { t: r.t, mc, p: r.p ?? null };
+      })
+      .filter((p): p is Sample => p != null)
       .sort((a, b) => a.t - b.t); // oldest to newest
     return NextResponse.json({ points });
   } catch {
@@ -43,9 +56,9 @@ export async function GET(req: Request) {
   }
 }
 
-function safeParse(s: string): Sample | null {
+function safeParse(s: string): RawSample | null {
   try {
-    return JSON.parse(s) as Sample;
+    return JSON.parse(s) as RawSample;
   } catch {
     return null;
   }
