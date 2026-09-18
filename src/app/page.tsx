@@ -12,7 +12,7 @@ export default function HomePage() {
             <span className="h-1.5 w-1.5 rounded-full bg-pink" /> Profile &amp; feed coins on {SITE.poweredBy}
           </span>
           <h1 className="mt-3 max-w-3xl font-display text-3xl font-black leading-[1.05] tracking-tight text-zinc-900 sm:text-5xl">
-            Tokenize your <span className="grad-text">fomo.family</span> profile or feed.
+            Tokenize your <span className="grad-text">fomo.family</span> profile &amp; feed.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-base">
             Every coin below launched on Vibz, and its creator fees route to that fomo.family
