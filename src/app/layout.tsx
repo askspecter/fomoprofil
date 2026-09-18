@@ -30,7 +30,6 @@ export const metadata: Metadata = {
     title: `${SITE.name} · tokenize your fomo.family profile`,
     description: SITE.description,
     images: ["/vibz-logo.jpg"],
-    site: SITE.xHandle,
   },
 };
 

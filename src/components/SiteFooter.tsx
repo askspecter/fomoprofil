@@ -46,16 +46,8 @@ export function SiteFooter() {
           fomo.family product. Nothing here is an endorsement of any profile or token.
         </p>
 
-        <div className="mt-6 flex items-center justify-between gap-4 border-t border-ink-line pt-5">
+        <div className="mt-6 flex items-center gap-4 border-t border-ink-line pt-5">
           <p className="text-xs text-zinc-500">© {year} {SITE.company}</p>
-          <a
-            href={SITE.x}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-zinc-600 underline-offset-4 transition hover:text-zinc-900 hover:underline"
-          >
-            {SITE.xHandle}
-          </a>
         </div>
       </div>
     </footer>
