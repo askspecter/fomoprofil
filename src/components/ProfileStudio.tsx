@@ -6,6 +6,7 @@ import { zeroAddress } from "viem";
 import { QuoteAssetSelect, type QuoteAsset } from "./QuoteAssetSelect";
 import { DeployButton } from "./DeployButton";
 import { MintNftButton } from "./MintNftButton";
+import { NftCardPreview } from "./NftCardPreview";
 import { uploadLogo } from "@/lib/upload";
 import { V2_GRADUATION_THRESHOLD_ETH } from "@/lib/pons";
 import type { LaunchInput } from "@/lib/pons";
@@ -438,7 +439,17 @@ export function ProfileStudio({
         </>
         ) : (
         <>
-          {/* NFT identity preview */}
+          {/* Live NFT card preview */}
+          <div className="mt-4">
+            <NftCardPreview
+              name={name || displayName}
+              handle={fomo?.handle || cleanHandle(handle)}
+              avatar={avatar}
+              wallet={feeWallet}
+              verified={fomo?.verified}
+            />
+          </div>
+
           <div className="mt-4">
             <label className="block text-xs font-semibold text-zinc-500">NFT name</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your profile NFT" className="field mt-1" maxLength={60} />
