@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { TokenFeed } from "@/components/TokenFeed";
+import { LiveTicker } from "@/components/LiveTicker";
 
 export default function HomePage() {
   return (
@@ -24,6 +25,11 @@ export default function HomePage() {
             <Link href="/explore" className="btn-ghost">Search by contract</Link>
           </div>
         </div>
+      </section>
+
+      {/* ── Live ticker tape ── */}
+      <section className="mt-8">
+        <LiveTicker />
       </section>
 
       {/* ── Feed of Vibz launches ── */}

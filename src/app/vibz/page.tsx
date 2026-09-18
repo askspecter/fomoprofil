@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { isAddress, zeroAddress, type Address } from "viem";
 import { CurveTradeWidget } from "@/components/CurveTradeWidget";
+import { VibeScore } from "@/components/VibeScore";
 import { Logo } from "@/components/Logo";
 import { SITE } from "@/lib/site";
 import { explorerToken, explorerUrl } from "@/lib/chain";
@@ -169,6 +170,16 @@ export default function VibzTokenPage() {
           <Stat label="Circulating" value={burn ? compact(burn.circulating) : "…"} live={!!burn} />
         </div>
 
+        {/* Graduation moment */}
+        {data?.graduated && (
+          <div className="mt-5 overflow-hidden rounded-xl border border-white/20 bg-white/[0.05] p-3 text-center">
+            <div className="grad-text font-display text-sm font-black uppercase tracking-[0.28em] animate-glow-pulse">
+              Graduated to Uniswap V4
+            </div>
+            <div className="mt-1 text-[11px] text-zinc-500">This coin cleared the bonding curve. It now trades on a Uniswap V4 pool.</div>
+          </div>
+        )}
+
         {/* Bonding-curve progress */}
         {onCurve && data?.curve && (
           <div className="mt-5">
@@ -181,6 +192,18 @@ export default function VibzTokenPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── Vibe Score (signature index) ── */}
+      <div className="mt-6">
+        <VibeScore
+          marketCapUsd={data?.marketCapUsd ?? null}
+          marketCapEth={data?.marketCapEth ?? null}
+          burnedPct={burn?.burnedPct ?? null}
+          progress={data?.curve?.progress ?? null}
+          graduated={data?.graduated}
+          loading={!data}
+        />
       </div>
 
       {/* ── Body: burn + trade ── */}
