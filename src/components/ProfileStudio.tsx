@@ -22,13 +22,42 @@ const ETH_ASSET: QuoteAsset = {
   name: "Ether",
 };
 
+/** What the user is tokenizing: their fomo.family profile, or their feed. */
+export type LaunchKind = "profile" | "feed";
+
+/** Kind-specific copy so one studio serves both launch types. */
+const KIND_COPY: Record<LaunchKind, { noun: string; Noun: string; hook: string; seedSuffix: string }> = {
+  profile: {
+    noun: "profile",
+    Noun: "Profile",
+    hook: "Who is this profile?",
+    seedSuffix: "",
+  },
+  feed: {
+    noun: "feed",
+    Noun: "Feed",
+    hook: "What's this feed about?",
+    seedSuffix: " Feed",
+  },
+};
+
 /** Normalize a handle for display + ticker seeding. */
 function cleanHandle(raw: string): string {
   return raw.trim().replace(/^@+/, "");
 }
 
-export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }) {
+export function ProfileStudio({
+  initialHandle = "",
+  initialKind = "profile",
+}: {
+  initialHandle?: string;
+  initialKind?: LaunchKind;
+}) {
   const { address } = useAccount();
+
+  // ── What we're launching: a fomo.family profile, or a feed ──
+  const [kind, setKind] = useState<LaunchKind>(initialKind);
+  const copy = KIND_COPY[kind];
 
   // ── Profile seed inputs ──
   const [handle, setHandle] = useState(cleanHandle(initialHandle));
@@ -112,7 +141,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
       // Prefill real profile data — everything stays editable before launch.
       if (p.displayName) {
         setDisplayName(p.displayName);
-        setName((prev) => prev || p.displayName);
+        setName((prev) => prev || `${p.displayName}${copy.seedSuffix}`);
       }
       if (p.bio) {
         setBio(p.bio);
@@ -167,16 +196,42 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
   const feeEth = options?.launchFee ? Number(options.launchFee) / 1e18 : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
+    <div className="space-y-6">
+      {/* ── Launch type: profile vs feed ── */}
+      <div className="card p-4 sm:p-5">
+        <div className="eyebrow mb-3">What do you want to tokenize?</div>
+        <div className="segbar" role="tablist" aria-label="Launch type">
+          {(["profile", "feed"] as LaunchKind[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={kind === k}
+              data-active={kind === k}
+              className="segbtn"
+              onClick={() => setKind(k)}
+            >
+              {k === "profile" ? "Fomo Profile" : "Fomo Feed"}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-zinc-500">
+          {kind === "profile"
+            ? "Launch a coin for your fomo.family profile — your identity, avatar and bio."
+            : "Launch a coin for your fomo.family feed — the stream you post and curate."}
+        </p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
       {/* ── Left: detect fomo.family profile + editable seed ── */}
       <section className="card p-5 sm:p-6">
         <div className="eyebrow">
-          <span className="step-badge">1</span> Your fomo.family profile
+          <span className="step-badge">1</span> Your fomo.family {copy.noun}
         </div>
         <p className="mt-3 text-sm text-zinc-600">
-          Drop your fomo.family handle and detect your profile. We pull your name, avatar and bio
-          straight from fomo.family, and route creator fees to your profile’s wallet. Everything stays
-          editable before you launch.
+          Drop your fomo.family handle and detect your {copy.noun}. We pull your name, avatar and bio
+          straight from fomo.family, and route creator fees to your {copy.noun}’s wallet. Everything
+          stays editable before you launch.
         </p>
 
         <label className="mt-5 block text-xs font-semibold text-zinc-500">Handle</label>
@@ -192,7 +247,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
 
         <button className="btn-brand mt-4 w-full" onClick={detectProfile} disabled={detecting}>
           {detecting && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
-          {detecting ? "Detecting…" : fomo ? "Re-detect profile" : "Detect my fomo.family profile"}
+          {detecting ? "Detecting…" : fomo ? `Re-detect ${copy.noun}` : `Detect my fomo.family ${copy.noun}`}
         </button>
         {detectError && <p className="mt-2 text-xs text-red-600">{detectError}</p>}
         {fomo && (
@@ -263,7 +318,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-semibold text-zinc-500">Coin name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your profile coin" className="field mt-1" maxLength={40} />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={`Your ${copy.noun} coin`} className="field mt-1" maxLength={40} />
           </div>
           <div>
             <label className="block text-xs font-semibold text-zinc-500">Ticker</label>
@@ -278,7 +333,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
         </div>
 
         <label className="mt-3 block text-xs font-semibold text-zinc-500">One-line hook</label>
-        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Who is this profile?" className="field mt-1" maxLength={280} />
+        <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={copy.hook} className="field mt-1" maxLength={280} />
 
         {/* Paired asset */}
         <label className="mt-4 block text-xs font-semibold text-zinc-500">Paired asset (quote)</label>
@@ -321,6 +376,7 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
 
         {/* Launch summary */}
         <div className="mt-4 space-y-1 rounded-xl border border-ink-line bg-white/50 p-3 text-xs text-zinc-500">
+          <div className="flex justify-between"><span>Launch type</span><span className="font-semibold text-zinc-700">Fomo {copy.Noun}</span></div>
           <div className="flex justify-between"><span>Launch model</span><span className="font-semibold text-zinc-700">Pons · bonding curve</span></div>
           <div className="flex justify-between"><span>Graduates to</span><span className="text-zinc-700">Uniswap V4 (~{V2_GRADUATION_THRESHOLD_ETH} ETH)</span></div>
           {feeWallet && (
@@ -336,9 +392,10 @@ export function ProfileStudio({ initialHandle = "" }: { initialHandle?: string }
         </div>
 
         <div className="mt-4">
-          <DeployButton input={launchInput} handle={cleanHandle(handle) || undefined} disabled={!canDeploy} />
+          <DeployButton input={launchInput} handle={cleanHandle(handle) || undefined} kind={kind} disabled={!canDeploy} />
         </div>
       </section>
+      </div>
     </div>
   );
 }

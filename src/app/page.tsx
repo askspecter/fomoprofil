@@ -9,27 +9,28 @@ export default function HomePage() {
       <section className="relative pt-10 sm:pt-14">
         <div className="animate-fade-up">
           <span className="eyebrow">
-            <span className="h-1.5 w-1.5 rounded-full bg-pink" /> Profile coins on {SITE.poweredBy}
+            <span className="h-1.5 w-1.5 rounded-full bg-pink" /> Profile &amp; feed coins on {SITE.poweredBy}
           </span>
           <h1 className="mt-3 max-w-3xl font-display text-3xl font-black leading-[1.05] tracking-tight text-zinc-900 sm:text-5xl">
-            Tokenize your <span className="grad-text">fomo.family</span> profile.
+            Tokenize your <span className="grad-text">fomo.family</span> profile or feed.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-base">
-            Every coin below launched on Dime, and its creator fees route to that fomo.family
-            profile’s wallet. Non-custodial on {SITE.chain}.
+            Every coin below launched on Vibz, and its creator fees route to that fomo.family
+            wallet. Pick what you launch — your profile or your feed. Non-custodial on {SITE.chain}.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link href="/create" className="btn-brand">Launch my profile →</Link>
+            <Link href="/create?type=profile" className="btn-brand">Launch a profile →</Link>
+            <Link href="/create?type=feed" className="btn-dark">Launch a feed →</Link>
             <Link href="/explore" className="btn-ghost">Search by contract</Link>
           </div>
         </div>
       </section>
 
-      {/* ── Feed of Dime launches ── */}
+      {/* ── Feed of Vibz launches ── */}
       <section className="mt-10 pb-6">
         <div className="mb-4 flex items-end justify-between">
           <h2 className="font-display text-xl font-black tracking-tight text-zinc-900">
-            Latest on <span className="grad-text">Dime</span>
+            Latest on <span className="grad-text">Vibz</span>
           </h2>
           <Link href="/leaderboard" className="text-xs font-semibold text-pink hover:underline">
             Leaderboard →

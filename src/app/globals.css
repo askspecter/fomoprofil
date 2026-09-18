@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   Dime — dark holographic-glass theme.
-   Near-black canvas, iridescent cyan→periwinkle→violet accents,
-   frosted glass surfaces — matched to the glass "D" logo.
+   Vibz — cinematic monochrome theme.
+   Warm near-black canvas, sculpted white / warm-silver signature,
+   frosted glass surfaces — matched to the white infinity monogram.
    ───────────────────────────────────────────────────────────── */
 :root {
   --font-display: "Space Grotesk", "Inter", "Segoe UI", system-ui, -apple-system, "DejaVu Sans", Arial, sans-serif;
@@ -13,34 +13,34 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "DejaVu Sans Mono", monospace;
   --font-logo: "Orbitron", "Space Grotesk", var(--font-display);
 
-  /* Holographic ramp */
-  --holo-1: #8fd0ff; /* cyan-blue   */
-  --holo-2: #a9b8ff; /* periwinkle  */
-  --holo-3: #c9a2ff; /* violet      */
-  --holo-4: #ff9ed6; /* warm rose highlight */
-  --holo: linear-gradient(100deg, var(--holo-1) 0%, var(--holo-2) 40%, var(--holo-3) 72%, var(--holo-4) 100%);
+  /* Sculpted-metal sheen ramp (white → warm silver), like the 3D logo. */
+  --holo-1: #ffffff; /* highlight   */
+  --holo-2: #ece8df; /* warm white  */
+  --holo-3: #c9c4b8; /* silver      */
+  --holo-4: #a8a297; /* deep silver */
+  --holo: linear-gradient(100deg, var(--holo-1) 0%, var(--holo-2) 42%, var(--holo-3) 74%, var(--holo-4) 100%);
 
-  /* Text */
-  --ink-1: #f2f4ff;
-  --ink-2: #cfd4f2;
-  --ink-3: #aab0d4;
-  --ink-4: #868cb0;
-  --ink-5: #6b7194;
+  /* Text — warm neutral greys on espresso black. */
+  --ink-1: #f6f4ef;
+  --ink-2: #d9d6cf;
+  --ink-3: #b0aca2;
+  --ink-4: #8b877d;
+  --ink-5: #6b6860;
 
   color-scheme: dark;
 }
 
-/* Techno wordmark for the DIME logotype */
+/* Sculpted wordmark for the VIBZ logotype */
 .wordmark {
   font-family: var(--font-logo);
   text-transform: uppercase;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   background: var(--holo);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  /* Wins over the .text-zinc-* color remaps so the gradient always shows. */
+  /* Wins over the .text-zinc-* color remaps so the sheen always shows. */
   -webkit-text-fill-color: transparent;
 }
 
@@ -52,7 +52,7 @@
   body {
     @apply antialiased;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-    background-color: #05060a;
+    background-color: #0a0908;
     color: var(--ink-2);
     min-height: 100dvh;
     width: 100%;
@@ -60,7 +60,7 @@
     overflow-x: hidden;
   }
   ::selection {
-    background: rgba(150, 160, 255, 0.28);
+    background: rgba(246, 244, 239, 0.22);
     color: #ffffff;
   }
   h1, h2, h3 {
@@ -73,16 +73,16 @@
   }
 }
 
-/* Cinematic backdrop: deep-space glows in the logo's blue/violet/cyan. */
+/* Cinematic backdrop: soft studio light on warm espresso black. */
 .cinema-bg {
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(52rem 40rem at 10% -8%, rgba(90, 120, 255, 0.20), transparent 55%),
-    radial-gradient(54rem 46rem at 94% 4%, rgba(150, 90, 255, 0.18), transparent 54%),
-    radial-gradient(60rem 54rem at 55% 122%, rgba(70, 200, 255, 0.14), transparent 55%),
-    #05060a;
+    radial-gradient(54rem 42rem at 12% -10%, rgba(255, 255, 255, 0.10), transparent 55%),
+    radial-gradient(50rem 44rem at 92% 2%, rgba(255, 255, 255, 0.06), transparent 54%),
+    radial-gradient(64rem 56rem at 55% 124%, rgba(200, 190, 175, 0.08), transparent 55%),
+    #0a0908;
 }
 /* Subtle film grain lifts the dark canvas without banding. */
 .grain {
@@ -90,12 +90,12 @@
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.14;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
 }
 
-/* Signature gradient text + accents */
+/* Signature sheen text + accents */
 .grad-text {
   background: var(--holo);
   -webkit-background-clip: text;
@@ -104,7 +104,7 @@
   -webkit-text-fill-color: transparent;
 }
 .grad-rule {
-  background: linear-gradient(90deg, transparent, rgba(150, 160, 255, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(246, 244, 239, 0.45), transparent);
 }
 
 @layer components {
@@ -114,7 +114,7 @@
     border-color: rgba(255, 255, 255, 0.09);
     background: rgba(255, 255, 255, 0.035);
     backdrop-filter: blur(18px);
-    box-shadow: 0 40px 90px -55px rgba(90, 120, 255, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 40px 90px -55px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   .card-hover {
     @apply transition duration-300;
@@ -122,20 +122,20 @@
   .card-hover:hover {
     @apply -translate-y-1;
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(160, 175, 255, 0.28);
-    box-shadow: 0 44px 100px -50px rgba(120, 140, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 44px 100px -50px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   }
 
-  /* Primary = holographic gradient with dark ink */
+  /* Primary = sculpted white with dark ink */
   .btn-brand {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition duration-200 disabled:cursor-not-allowed disabled:opacity-40;
-    color: #0a0b16;
+    color: #0a0908;
     background: var(--holo);
-    box-shadow: 0 14px 34px -12px rgba(130, 150, 255, 0.65);
+    box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
   .btn-brand:hover:not(:disabled) {
-    filter: brightness(1.06) saturate(1.05);
-    box-shadow: 0 18px 44px -12px rgba(150, 165, 255, 0.8);
+    filter: brightness(1.04);
+    box-shadow: 0 18px 44px -12px rgba(255, 255, 255, 0.28);
     transform: translateY(-1px);
   }
 
@@ -149,19 +149,19 @@
   .btn-dark:hover:not(:disabled) {
     transform: translateY(-1px);
     background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(160, 175, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
   }
 
   /* Ghost = hairline glass outline */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-40;
     color: var(--ink-2);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.04);
   }
   .btn-ghost:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(160, 175, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
     color: var(--ink-1);
   }
 
@@ -173,9 +173,9 @@
     background: rgba(255, 255, 255, 0.04);
   }
   .chip-accent {
-    color: var(--holo-2);
-    border-color: rgba(169, 184, 255, 0.35);
-    background: rgba(169, 184, 255, 0.1);
+    color: var(--ink-1);
+    border-color: rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   /* Form field */
@@ -189,8 +189,8 @@
     color: var(--ink-5);
   }
   .field:focus {
-    border-color: rgba(150, 165, 255, 0.6);
-    box-shadow: 0 0 0 3px rgba(140, 160, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(246, 244, 239, 0.12);
   }
 
   /* Section eyebrow label */
@@ -202,9 +202,26 @@
   /* Step number badge */
   .step-badge {
     @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold;
-    color: var(--holo-2);
-    border: 1px solid rgba(160, 175, 255, 0.28);
-    background: rgba(160, 175, 255, 0.08);
+    color: var(--ink-1);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Segmented control (Profile / Feed launch toggle) */
+  .segbar {
+    @apply inline-flex w-full items-center gap-1 rounded-xl p-1;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .segbtn {
+    @apply flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition;
+    color: var(--ink-3);
+  }
+  .segbtn:hover { color: var(--ink-1); }
+  .segbtn[data-active="true"] {
+    color: #0a0908;
+    background: var(--holo);
+    box-shadow: 0 8px 22px -12px rgba(255, 255, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 }
 
@@ -243,14 +260,14 @@
 .text-amber-600 { color: #ffce6a !important; }
 .text-amber-700 { color: #ffd98a !important; }
 
-/* Active pill (nav / connected wallet): accent-tinted glass, white text. */
+/* Active pill (nav / connected wallet): bright glass, white text. */
 .bg-zinc-900.text-white {
-  background-color: rgba(160, 175, 255, 0.18) !important;
+  background-color: rgba(255, 255, 255, 0.16) !important;
   color: #ffffff !important;
-  box-shadow: inset 0 0 0 1px rgba(160, 175, 255, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
 }
-/* Solid accent (bg-pink) is a light holographic tone → use dark ink on it. */
-.bg-pink.text-white { color: #0a0b16 !important; }
+/* Solid accent (bg-pink) is a light sculpted tone → use dark ink on it. */
+.bg-pink.text-white { color: #0a0908 !important; }
 
 /* Marquee row */
 .marquee-track {

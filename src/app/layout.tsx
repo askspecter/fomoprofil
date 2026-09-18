@@ -16,20 +16,20 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   icons: {
-    icon: "/dime-logo.png",
-    apple: "/dime-logo.png",
+    icon: "/vibz-logo.jpg",
+    apple: "/vibz-logo.jpg",
   },
   openGraph: {
     title: `${SITE.name} · tokenize your fomo.family profile`,
     description: SITE.description,
     type: "website",
-    images: ["/dime-logo.png"],
+    images: ["/vibz-logo.jpg"],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE.name} · tokenize your fomo.family profile`,
     description: SITE.description,
-    images: ["/dime-logo.png"],
+    images: ["/vibz-logo.jpg"],
     site: SITE.xHandle,
   },
 };
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#05060a",
+  themeColor: "#0a0908",
 };
 
 // Render at request time, not static export. RainbowKit's config throws

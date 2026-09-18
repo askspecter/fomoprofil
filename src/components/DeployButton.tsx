@@ -16,10 +16,12 @@ import { robinhoodChain, explorerTx } from "@/lib/chain";
 export function DeployButton({
   input,
   handle,
+  kind = "profile",
   disabled,
 }: {
   input: LaunchInput;
   handle?: string;
+  kind?: "profile" | "feed";
   disabled?: boolean;
 }) {
   const { address, isConnected, chainId } = useAccount();
@@ -55,6 +57,7 @@ export function DeployButton({
           symbol: input.ticker,
           logo: input.imageUri,
           handle,
+          kind,
           twitter: input.twitter,
           telegram: input.telegram,
           website: input.website,
@@ -144,11 +147,11 @@ export function DeployButton({
     return (
       <div className="space-y-2">
         <a className="btn-brand w-full" href={explorerTx(txHash)} target="_blank" rel="noreferrer">
-          ✓ Profile launched. View on explorer
+          ✓ {kind === "feed" ? "Feed" : "Profile"} launched. View on explorer
         </a>
         {tokenAddress ? (
           <a href={`/launch/${tokenAddress}`} className="btn-ghost w-full">
-            Open your profile coin →
+            Open your {kind} coin →
           </a>
         ) : (
           <a href="/" className="btn-ghost w-full">
@@ -189,7 +192,9 @@ export function DeployButton({
       ? "Reading on-chain…"
       : status === "signing"
         ? "Sign in your wallet…"
-        : "Launch profile";
+        : kind === "feed"
+          ? "Launch feed"
+          : "Launch profile";
 
   return (
     <div className="space-y-2">

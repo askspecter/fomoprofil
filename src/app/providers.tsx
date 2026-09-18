@@ -24,7 +24,7 @@ import { robinhoodChain } from "@/lib/chain";
 //      viem. Forcing a single viem broke WalletConnect and crashed the app.
 // And "@rainbow-me/rainbowkit/styles.css" is imported in layout.tsx.
 const wagmiConfig = getDefaultConfig({
-  appName: "Dime",
+  appName: "Vibz",
   projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "fomo_missing_wc_project_id",
   chains: [robinhoodChain],
   transports: {
@@ -39,10 +39,10 @@ const wagmiConfig = getDefaultConfig({
   ],
 });
 
-// Holographic dark theme to match the Dime glass logo.
+// Cinematic monochrome dark theme to match the Vibz white monogram.
 const fomoTheme = darkTheme({
-  accentColor: "#a9b8ff",
-  accentColorForeground: "#0a0b16",
+  accentColor: "#f4f1ea",
+  accentColorForeground: "#0a0908",
   borderRadius: "large",
   overlayBlur: "small",
   fontStack: "system",

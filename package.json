@@ -1,8 +1,8 @@
 {
-  "name": "fomo-profile",
+  "name": "vibz",
   "version": "0.1.0",
   "private": true,
-  "description": "Dime — tokenize your fomo.family profile and launch it on the Pons bonding curve on Robinhood Chain, non-custodial.",
+  "description": "Vibz — tokenize your fomo.family profile or feed and launch it on the Pons bonding curve on Robinhood Chain, non-custodial.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

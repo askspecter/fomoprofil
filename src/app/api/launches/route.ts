@@ -8,7 +8,7 @@ export const revalidate = 0;
 
 const KEY = "fomo:launches";
 
-/** A profile coin launched through Dime (always Pons). */
+/** A profile coin launched through Vibz (always Pons). */
 export interface LaunchRecord {
   token: string;
   curve?: string;
@@ -16,7 +16,9 @@ export interface LaunchRecord {
   name: string;
   symbol: string;
   logo: string;
-  /** The fomo.family handle this profile coin represents. */
+  /** What was tokenized: a fomo.family profile or a feed. */
+  kind?: "profile" | "feed";
+  /** The fomo.family handle this coin represents. */
   handle?: string;
   twitter?: string;
   telegram?: string;
@@ -54,7 +56,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ items });
 }
 
-/** POST /api/launches - record a profile launch made through Dime. */
+/** POST /api/launches - record a profile launch made through Vibz. */
 export async function POST(req: Request) {
   const kv = getKv();
   if (!kv) return NextResponse.json({ error: "Storage not configured." }, { status: 503 });
@@ -77,6 +79,7 @@ export async function POST(req: Request) {
     name: String(body.name ?? "").slice(0, 80),
     symbol: String(body.symbol ?? "").slice(0, 16),
     logo: String(body.logo ?? "").slice(0, 2000),
+    kind: body.kind === "feed" ? "feed" : "profile",
     handle: body.handle ? String(body.handle).slice(0, 80) : undefined,
     twitter: body.twitter ? String(body.twitter).slice(0, 200) : undefined,
     telegram: body.telegram ? String(body.telegram).slice(0, 200) : undefined,
@@ -97,7 +100,7 @@ export async function POST(req: Request) {
 
 /** The message a creator signs to remove one of their launches from the feed. */
 function removeMessage(token: string): string {
-  return `Remove ${token.toLowerCase()} from the Dime feed`;
+  return `Remove ${token.toLowerCase()} from the Vibz feed`;
 }
 
 /**
