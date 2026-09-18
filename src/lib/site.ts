@@ -10,10 +10,14 @@ export const SITE = {
   poweredBy: "Pons",
   ponsUrl: "https://ponsfamily.com",
   fomoUrl: "https://fomo.family",
+  /** The official $VIBZ token contract on Robinhood Chain (set via env). */
+  tokenAddress: (process.env.NEXT_PUBLIC_VIBZ_TOKEN ?? "").trim(),
+  tokenSymbol: "VIBZ",
 } as const;
 
 export const NAV = [
   { href: "/", label: "Home" },
+  { href: "/vibz", label: "$VIBZ" },
   { href: "/explore", label: "Explore" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/create", label: "Launch" },

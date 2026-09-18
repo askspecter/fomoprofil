@@ -4,6 +4,7 @@ import { SITE } from "@/lib/site";
 
 const PRODUCT = [
   { href: "/", label: "Home" },
+  { href: "/vibz", label: "$VIBZ" },
   { href: "/explore", label: "Explore" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/create", label: "Launch" },
