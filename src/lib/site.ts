@@ -19,11 +19,12 @@ export const SITE = {
   tokenSymbol: "VIBZ",
   /**
    * Automatic buyback-and-burn cadence for $VIBZ: a burn runs every N minutes,
-   * counting rounds from round 1 at this start time. Both are env-overridable so
-   * the schedule can be re-anchored without a code change.
+   * counting rounds from round 1 at this start time. Hardcoded (not read from
+   * env) so round numbering is stable and can't be thrown off by a stale env
+   * value — round 1 begins at burnRoundStart and increments every N minutes.
    */
-  burnRoundStart: (process.env.NEXT_PUBLIC_VIBZ_BURN_START ?? "2026-09-20T00:00:00Z").trim(),
-  burnRoundMinutes: Number(process.env.NEXT_PUBLIC_VIBZ_BURN_MINUTES ?? "10") || 10,
+  burnRoundStart: "2026-09-20T13:25:00Z",
+  burnRoundMinutes: 10,
   /** The profile-NFT (ERC-721) contract. Blank until NFT minting launches. */
   nftAddress: (process.env.NEXT_PUBLIC_VIBZ_NFT ?? "").trim(),
 } as const;
