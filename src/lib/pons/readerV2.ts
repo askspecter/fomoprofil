@@ -202,16 +202,25 @@ export async function getCurveState(curve: Address): Promise<CurveState> {
     read("creatorTaxBps"),
   ]);
   const [quoteReserve, tokenReserve] = reserves as [bigint, bigint];
+  const sellableTokens = sellable as bigint;
+
+  // The curve holds the full supply, but a chunk (reservedTokens) is set aside
+  // for the graduated Uniswap pool and is NOT part of the active trading pool.
+  // The marginal price is quote reserve over the SELLABLE reserve, not the full
+  // token balance — pricing against the full balance understates price (and so
+  // market cap) by the reserved fraction. Fall back to the full reserve only if
+  // the sellable read is unavailable.
+  const priceDenom = sellableTokens > 0n ? sellableTokens : tokenReserve;
 
   return {
     quoteReserve,
     tokenReserve,
     realQuoteReserve: realQuote as bigint,
     graduationThreshold: threshold as bigint,
-    sellableTokens: sellable as bigint,
+    sellableTokens,
     readyToGraduate: ready as boolean,
     graduated: grad as boolean,
-    spotPrice: tokenReserve > 0n ? Number(quoteReserve) / Number(tokenReserve) : 0,
+    spotPrice: priceDenom > 0n ? Number(quoteReserve) / Number(priceDenom) : 0,
     progress: (threshold as bigint) > 0n ? Number(realQuote) / Number(threshold as bigint) : 0,
     feeBps: feeBps as bigint,
     creatorTaxBps: creatorTaxBps as bigint,
