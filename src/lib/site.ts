@@ -10,8 +10,12 @@ export const SITE = {
   poweredBy: "Pons",
   ponsUrl: "https://ponsfamily.com",
   fomoUrl: "https://fomo.family",
-  /** The official $VIBZ token contract on Robinhood Chain (env overrides the default CA). */
-  tokenAddress: (process.env.NEXT_PUBLIC_VIBZ_TOKEN ?? "0x203284f913644ef2e2707cbb00e19ca8af50d4f3").trim(),
+  /**
+   * The official $VIBZ token contract on Robinhood Chain. Hardcoded (not read
+   * from env) so the deployed site always shows the correct CA — a stale or
+   * wrong NEXT_PUBLIC_VIBZ_TOKEN env value can no longer override it.
+   */
+  tokenAddress: "0x203284f913644ef2e2707cbb00e19ca8af50d4f3",
   tokenSymbol: "VIBZ",
   /**
    * Automatic buyback-and-burn cadence for $VIBZ: a burn runs every N minutes,
